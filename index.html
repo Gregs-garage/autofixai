@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoFix AI - Vehicle Diagnostic Platform</title>
+<style>
+:root {
+  --primary: #e63946;
+  --primary-dark: #c1121f;
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #21262d;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --accent: #58a6ff;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+header { background: linear-gradient(135deg, #0d1117 0%, #1a0505 100%); border-bottom: 2px solid var(--primary); padding: 0 20px; position: sticky; top: 0; z-index: 100; }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-icon { width: 44px; height: 44px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.logo h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.logo span { color: var(--primary); }
+.lang-toggle { display: flex; gap: 6px; }
+.lang-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+.lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+nav { background: var(--bg2); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 4px; padding: 0 20px; overflow-x: auto; }
+.nav-btn { background: none; border: none; color: var(--text2); padding: 14px 18px; cursor: pointer; font-size: 0.9rem; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+.nav-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+.nav-btn:hover { color: var(--text); }
+main { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.card h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.card h2 .icon { font-size: 1.3rem; }
+input, select, textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 12px 16px; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+input::placeholder { color: var(--text2); }
+.btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-success { background: var(--success); color: white; }
+.input-row { display: flex; gap: 12px; margin-bottom: 16px; }
+.input-row input { flex: 1; }
+.result-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 16px; }
+.result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+.result-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.result-item label { font-size: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+.result-item span { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+.severity-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+.sev-high { background: rgba(248,81,73,0.2); color: var(--danger); border: 1px solid var(--danger); }
+.sev-med { background: rgba(210,153,34,0.2); color: var(--warning); border: 1px solid var(--warning); }
+.sev-low { background: rgba(63,185,80,0.2); color: var(--success); border: 1px solid var(--success); }
+.dtc-section { margin-top: 16px; }
+.dtc-section h3 { font-size: 0.85rem; text-transform: uppercase; color: var(--text2); letter-spacing: 0.5px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.dtc-list { list-style: none; }
+.dtc-list li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; display: flex; align-items: flex-start; gap: 8px; }
+.dtc-list li:last-child { border-bottom: none; }
+.dtc-list li::before { content: "▸"; color: var(--primary); flex-shrink: 0; margin-top: 1px; }
+.recall-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.recall-table th { background: var(--bg3); padding: 10px 14px; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: var(--text2); border-bottom: 1px solid var(--border); }
+.recall-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; vertical-align: top; }
+.recall-table tr:hover td { background: var(--bg3); }
+.garage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.tab-content.locked .card:not(.gate-screen) { display: none; }
+.gate-screen { text-align: center; }
+.gate-screen .gate-icon { font-size: 2.6rem; margin-bottom: 6px; }
+.gate-screen h2 { justify-content: center; }
+.gate-screen p { color: var(--text2); max-width: 460px; margin: 8px auto 0; }
+.gate-screen .gate-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+.vehicle-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative; }
+.vehicle-card:hover { border-color: var(--primary); }
+.vehicle-card h3 { font-size: 1rem; margin-bottom: 4px; }
+.vehicle-card p { color: var(--text2); font-size: 0.85rem; }
+.vehicle-card .vin-code { font-family: monospace; font-size: 0.8rem; color: var(--accent); margin-top: 8px; }
+.vehicle-card .card-actions { display: flex; gap: 8px; margin-top: 16px; }
+.history-item { background: var(--bg3); border-radius: 8px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; }
+.history-item .code { font-family: monospace; font-weight: 700; color: var(--primary); font-size: 1rem; }
+.history-item .desc { color: var(--text2); font-size: 0.85rem; margin-top: 2px; }
+.history-item .date { color: var(--text2); font-size: 0.8rem; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.dot-open { background: var(--danger); }
+.dot-resolved { background: var(--success); }
+.hero { text-align: center; padding: 32px 20px; }
+.hero h2 { font-size: 2rem; font-weight: 700; margin-bottom: 12px; }
+.hero h2 span { color: var(--primary); }
+.hero p { color: var(--text2); font-size: 1rem; max-width: 600px; margin: 0 auto 24px; }
+.features { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 32px; }
+.feature-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+.feature-card .f-icon { font-size: 2rem; margin-bottom: 12px; }
+.feature-card h3 { margin-bottom: 8px; font-size: 0.95rem; }
+.feature-card p { color: var(--text2); font-size: 0.85rem; }
+.loading { color: var(--text2); font-style: italic; padding: 20px; text-align: center; }
+.error-msg { background: rgba(248,81,73,0.15); border: 1px solid var(--danger); color: var(--danger); padding: 12px 16px; border-radius: 8px; margin-top: 12px; }
+.success-msg { background: rgba(63,185,80,0.15); border: 1px solid var(--success); color: var(--success); padding: 12px 16px; border-radius: 8px; margin-top: 12px; }
+.tabs-sub { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab-sub-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+.tab-sub-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.spec-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
+.spec-box .val { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+.spec-box .lbl { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 20px; text-align: center; color: var(--text2); font-size: 0.85rem; margin-top: 40px; }
+@media (max-width: 600px) { .input-row { flex-direction: column; } .result-grid { grid-template-columns: 1fr 1fr; } }
+.hidden { display: none !important; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 4px; }
+.tag-tsb { background: rgba(88,166,255,0.2); color: var(--accent); }
+.tag-recall { background: rgba(248,81,73,0.2); color: var(--danger); }
+/* Auth area in header */
+.auth-area { display: flex; align-items: center; gap: 10px; }
+.auth-email { color: var(--text2); font-size: 0.85rem; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pro-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg,#d29922,#e63946); color: #fff; font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.3px; }
+.pro-tag { display: inline-block; background: linear-gradient(135deg,#d29922,#e63946); color: #fff; font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px; vertical-align: middle; }
+.btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 420px; padding: 28px; position: relative; }
+.modal h2 { font-size: 1.3rem; margin-bottom: 6px; }
+.modal .sub { color: var(--text2); font-size: 0.88rem; margin-bottom: 20px; }
+.modal-close { position: absolute; top: 16px; right: 18px; background: none; border: none; color: var(--text2); font-size: 1.4rem; cursor: pointer; line-height: 1; }
+.modal-close:hover { color: var(--text); }
+.modal label { display: block; font-size: 0.8rem; color: var(--text2); margin: 12px 0 6px; }
+.auth-tabs { display: flex; gap: 6px; margin-bottom: 18px; }
+.auth-tab { flex: 1; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.88rem; }
+.auth-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.auth-msg { font-size: 0.85rem; margin-top: 14px; min-height: 18px; }
+.auth-msg.error { color: var(--danger); }
+.auth-msg.success { color: var(--success); }
+/* Pricing */
+.pricing-wrap { display: flex; justify-content: center; padding: 12px 0 8px; }
+.plan-card { background: var(--bg2); border: 2px solid var(--primary); border-radius: 16px; padding: 32px; max-width: 460px; width: 100%; box-shadow: 0 8px 40px rgba(230,57,70,0.15); }
+.plan-card .plan-name { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.plan-price { font-size: 2.8rem; font-weight: 800; margin: 16px 0 4px; }
+.plan-price span { font-size: 1rem; font-weight: 500; color: var(--text2); }
+.plan-feats { list-style: none; margin: 22px 0; display: grid; gap: 12px; }
+.plan-feats li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.92rem; color: var(--text); }
+.plan-feats li::before { content: "✓"; color: var(--success); font-weight: 800; }
+.plan-card .btn { width: 100%; justify-content: center; font-size: 1rem; padding: 14px; }
+.plan-note { color: var(--text2); font-size: 0.78rem; text-align: center; margin-top: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🔧</div>
+      <h1>Auto<span>Fix</span> AI</h1>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('es')">ES</button>
+    </div>
+    <div class="auth-area" id="auth-area">
+      <!-- Logged-out state -->
+      <div id="auth-logged-out" style="display:flex;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="openAuth('login')" data-en="Sign In" data-es="Iniciar Sesión">Sign In</button>
+        <button class="btn btn-primary btn-sm" onclick="openAuth('signup')" data-en="Register" data-es="Registrarse">Register</button>
+      </div>
+      <!-- Logged-in state -->
+      <div id="auth-logged-in" style="display:none;align-items:center;gap:10px;">
+        <span class="pro-badge" id="pro-badge" style="display:none;">⭐ PRO</span>
+        <span class="auth-email" id="auth-email"></span>
+        <button class="btn btn-secondary btn-sm" onclick="doLogout()" data-en="Sign Out" data-es="Salir">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</header>
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showTab('home')" data-en="🏠 Home" data-es="🏠 Inicio">🏠 Home</button>
+    <button class="nav-btn" onclick="showTab('vin')" data-en="🔍 VIN Decoder" data-es="🔍 Decodificador VIN">🔍 VIN Decoder</button>
+    <button class="nav-btn" onclick="showTab('dtc')" data-en="⚠️ OBD-II Codes" data-es="⚠️ Códigos OBD-II">⚠️ OBD-II Codes</button>
+    <button class="nav-btn" onclick="showTab('recalls')" data-en="📋 TSB & Recalls" data-es="📋 TSB y Recalls">📋 TSB & Recalls</button>
+    <button class="nav-btn" onclick="showTab('garage')" data-en="🚗 My Garage" data-es="🚗 Mi Garaje">🚗 My Garage</button>
+    <button class="nav-btn" onclick="showTab('pricing')" data-en="💎 Pricing" data-es="💎 Precios">💎 Pricing</button>
+    <button class="nav-btn" onclick="openChecklist()" data-en="📋 Service Checklist" data-es="📋 Lista de Servicio">📋 Service Checklist</button>
+  </div>
+</nav>
+<main>
+
+<!-- HOME TAB -->
+<div id="tab-home" class="tab-content active">
+  <div class="hero">
+    <h2 data-en="Professional Vehicle <span>Diagnostics</span>" data-es="Diagnóstico Vehicular <span>Profesional</span>">Professional Vehicle <span>Diagnostics</span></h2>
+    <p data-en="Free VIN decoding for everyone. Unlock AI OBD-II diagnostics, TSBs & recalls, and your vehicle garage with AutoFix Pro." data-es="Decodificación de VIN gratis para todos. Desbloquea diagnósticos OBD-II con IA, TSBs y recalls, y tu garaje de vehículos con AutoFix Pro.">Free VIN decoding for everyone. Unlock AI OBD-II diagnostics, TSBs &amp; recalls, and your vehicle garage with AutoFix Pro.</p>
+    <button class="btn btn-primary" onclick="showTab('vin')" style="font-size:1rem;padding:14px 32px;">
+      <span data-en="🔍 Decode a VIN Now" data-es="🔍 Decodificar VIN Ahora">🔍 Decode a VIN Now</span>
+    </button>
+  </div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="f-icon">🔍</div>
+      <h3 data-en="VIN Decoder" data-es="Decodificador VIN">VIN Decoder</h3>
+      <p data-en="Full vehicle info from any 17-digit VIN using NHTSA database" data-es="Info completa del vehículo desde cualquier VIN de 17 dígitos usando la base de datos NHTSA">Full vehicle info from any 17-digit VIN using NHTSA database</p>
+    </div>
+    <div class="feature-card">
+      <div class="f-icon">⚠️</div>
+      <h3 data-en="OBD-II Diagnostics" data-es="Diagnósticos OBD-II">OBD-II Diagnostics</h3>
+      <p data-en="Decode any fault code with causes, tests, fixes & severity rating" data-es="Decodifica cualquier código de falla con causas, pruebas, soluciones y nivel de severidad">Decode any fault code with causes, tests, fixes & severity rating</p>
+    </div>
+    <div class="feature-card">
+      <div class="f-icon">📋</div>
+      <h3 data-en="TSB & Recall Check" data-es="Verificación TSB y Recall">TSB & Recall Check</h3>
+      <p data-en="Check NHTSA recalls and technical service bulletins for any vehicle" data-es="Verifica recalls NHTSA y boletines de servicio técnico para cualquier vehículo">Check NHTSA recalls and technical service bulletins for any vehicle</p>
+    </div>
+    <div class="card" style="border-color:#D32F2F;cursor:pointer;" onclick="openChecklist()">
+      <h2><span class="icon">📋</span> <span data-en="Service Checklist Generator" data-es="Generador de Lista de Servicio">Service Checklist Generator</span> <span class="pro-tag" data-en="PRO" data-es="PRO">PRO</span></h2>
+      <p data-en="Generate a full vehicle-specific service checklist from VIN or manual entry. Tick off jobs, calculate labour time, print a job sheet." data-es="Genera una lista de servicio completa específica del vehículo desde VIN. Marca trabajos, calcula tiempo de mano de obra, imprime una hoja de trabajo.">Generate a full vehicle-specific service checklist from VIN. Tick off jobs, calculate labour time and print a professional job sheet.</p>
+      <button class="btn btn-primary" style="margin-top:12px;background:#D32F2F;border-color:#D32F2F;">📋 Open Service Checklist →</button>
+    </div>
+    <div class="feature-card">
+      <div class="f-icon">🚗</div>
+      <h3 data-en="Vehicle Garage" data-es="Garaje Virtual">Vehicle Garage</h3>
+      <p data-en="Save vehicles, track repair history, and manage diagnostic logs" data-es="Guarda vehículos, rastrea historial de reparaciones y gestiona registros de diagnóstico">Save vehicles, track repair history, and manage diagnostic logs</p>
+    </div>
+    <div class="feature-card">
+      <div class="f-icon">📊</div>
+      <h3 data-en="Performance Specs" data-es="Especificaciones de Rendimiento">Performance Specs</h3>
+      <p data-en="HP, torque, fuel economy, dimensions and more by year/make/model" data-es="CV, torque, consumo de combustible, dimensiones y más por año/marca/modelo">HP, torque, fuel economy, dimensions and more by year/make/model</p>
+    </div>
+    <div class="feature-card">
+      <div class="f-icon">🌐</div>
+      <h3 data-en="Bilingual EN/ES" data-es="Bilingüe EN/ES">Bilingual EN/ES</h3>
+      <p data-en="Full support in English and Spanish for all users" data-es="Soporte completo en inglés y español para todos los usuarios">Full support in English and Spanish for all users</p>
+    </div>
+  </div>
+</div>
+
+<!-- VIN DECODER TAB -->
+<div id="tab-vin" class="tab-content">
+  <div class="card">
+    <h2><span class="icon">🔍</span> <span data-en="VIN Decoder" data-es="Decodificador VIN">VIN Decoder</span></h2>
+    <div class="input-row">
+      <input type="text" id="vin-input" maxlength="17" placeholder="Enter 17-digit VIN..." data-en-placeholder="Enter 17-digit VIN..." data-es-placeholder="Ingresa el VIN de 17 dígitos..." style="text-transform:uppercase;font-family:monospace;letter-spacing:2px;font-size:1.1rem;">
+      <button class="btn btn-primary" onclick="decodeVIN()"><span data-en="Decode" data-es="Decodificar">Decode</span></button>
+    </div>
+    <p style="color:var(--text2);font-size:0.85rem;" data-en="Or select your vehicle manually:" data-es="O selecciona tu vehículo manualmente:">Or select your vehicle manually:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:12px;">
+      <select id="sel-year" onchange="loadMakes()"><option value="">-- Year / Año --</option></select>
+      <select id="sel-make" onchange="loadModels()"><option value="">-- Make / Marca --</option></select>
+      <select id="sel-model" onchange="loadTrims()"><option value="">-- Model / Modelo --</option></select>
+      <button class="btn btn-secondary" onclick="lookupBySelector()" data-en="🔎 Look Up" data-es="🔎 Buscar">🔎 Look Up</button>
+    </div>
+    <div id="vin-result"></div>
+  </div>
+  <div class="card" id="specs-card" style="display:none">
+    <h2><span class="icon">📊</span> <span data-en="Performance Specs" data-es="Especificaciones de Rendimiento">Performance Specs</span></h2>
+    <div id="specs-result" class="specs-grid"></div>
+  </div>
+</div>
+
+<!-- DTC TAB -->
+<div id="tab-dtc" class="tab-content">
+  <div class="card">
+    <h2><span class="icon">⚠️</span> <span data-en="OBD-II Fault Code Lookup" data-es="Búsqueda de Códigos OBD-II">OBD-II Fault Code Lookup</span></h2>
+    <div class="input-row">
+      <input type="text" id="dtc-input" maxlength="6" placeholder="e.g. P0301, P0420, B0001..." data-en-placeholder="e.g. P0301, P0420, B0001..." data-es-placeholder="ej. P0301, P0420, B0001..." style="text-transform:uppercase;font-family:monospace;font-size:1.1rem;">
+      <button class="btn btn-primary" onclick="lookupDTC()"><span data-en="Diagnose" data-es="Diagnosticar">Diagnose</span></button>
+    </div>
+    <p style="color:var(--text2);font-size:0.82rem;margin-top:8px;" data-en="Supports P, B, C, U codes — generic and manufacturer-specific" data-es="Compatible con códigos P, B, C, U — genéricos y específicos del fabricante">Supports P, B, C, U codes — generic and manufacturer-specific</p>
+    <div id="dtc-result"></div>
+  </div>
+  <div class="card" id="dtc-related-card" style="display:none">
+    <h2><span class="icon">📋</span> <span data-en="Related TSBs & Recalls for Current Vehicle" data-es="TSBs y Recalls Relacionados al Vehículo">Related TSBs & Recalls for Current Vehicle</span></h2>
+    <div id="dtc-tsb-result"></div>
+  </div>
+</div>
+
+<!-- RECALLS TAB -->
+<div id="tab-recalls" class="tab-content">
+  <div class="card">
+    <h2><span class="icon">📋</span> <span data-en="TSB & Recall Lookup" data-es="Búsqueda de TSB y Recalls">TSB & Recall Lookup</span></h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px;">
+      <input type="text" id="r-year" placeholder="Year / Año" maxlength="4">
+      <input type="text" id="r-make" placeholder="Make / Marca (e.g. Toyota)">
+      <input type="text" id="r-model" placeholder="Model / Modelo (e.g. Camry)">
+      <button class="btn btn-primary" onclick="lookupRecalls()"><span data-en="Search Recalls" data-es="Buscar Recalls">Search Recalls</span></button>
+    </div>
+    <p style="color:var(--text2);font-size:0.85rem;" data-en="Or enter VIN for direct recall lookup:" data-es="O ingresa el VIN para búsqueda directa:">Or enter VIN for direct recall lookup:</p>
+    <div class="input-row" style="margin-top:10px;">
+      <input type="text" id="r-vin" placeholder="Enter VIN..." data-en-placeholder="Enter VIN..." data-es-placeholder="Ingresa el VIN..." style="font-family:monospace;text-transform:uppercase;">
+      <button class="btn btn-secondary" onclick="lookupRecallsByVIN()"><span data-en="VIN Recall Check" data-es="Buscar por VIN">VIN Recall Check</span></button>
+    </div>
+    <div id="recalls-result"></div>
+  </div>
+</div>
+
+<!-- GARAGE TAB -->
+<div id="tab-garage" class="tab-content">
+  <div class="card">
+    <h2><span class="icon">🚗</span> <span data-en="My Garage" data-es="Mi Garaje">My Garage</span></h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <p style="color:var(--text2);font-size:0.9rem;" data-en="Save and manage your vehicles for quick access" data-es="Guarda y administra tus vehículos para acceso rápido">Save and manage your vehicles for quick access</p>
+      <button class="btn btn-primary" onclick="showAddVehicle()" data-en="+ Add Vehicle" data-es="+ Agregar Vehículo">+ Add Vehicle</button>
+    </div>
+    <div id="add-vehicle-form" class="hidden" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;">
+      <h3 style="margin-bottom:14px;font-size:0.95rem;" data-en="Add New Vehicle" data-es="Agregar Nuevo Vehículo">Add New Vehicle</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
+        <input type="text" id="new-vin" placeholder="VIN (optional)" data-en-placeholder="VIN (optional)" data-es-placeholder="VIN (opcional)" style="font-family:monospace;text-transform:uppercase;">
+        <input type="text" id="new-year" placeholder="Year / Año">
+        <input type="text" id="new-make" placeholder="Make / Marca">
+        <input type="text" id="new-model" placeholder="Model / Modelo">
+        <input type="text" id="new-engine" placeholder="Engine / Motor (e.g. 2.5L 4cyl)">
+        <input type="text" id="new-nickname" placeholder="Nickname (e.g. My Truck)">
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button class="btn btn-primary" onclick="addVehicle()" data-en="Save Vehicle" data-es="Guardar Vehículo">Save Vehicle</button>
+        <button class="btn btn-secondary" onclick="hideAddVehicle()" data-en="Cancel" data-es="Cancelar">Cancel</button>
+      </div>
+    </div>
+    <div id="garage-list" class="garage-grid"></div>
+  </div>
+  <div class="card" id="history-card" style="display:none">
+    <h2><span class="icon">📜</span> <span data-en="Repair & Diagnostic History" data-es="Historial de Reparaciones y Diagnósticos">Repair & Diagnostic History</span></h2>
+    <div id="history-vehicle-name" style="color:var(--text2);margin-bottom:16px;font-size:0.9rem;"></div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- PRICING TAB -->
+<div id="tab-pricing" class="tab-content">
+  <div class="hero" style="padding-bottom:8px;">
+    <h2 data-en="Upgrade to <span>AutoFix Pro</span>" data-es="Mejora a <span>AutoFix Pro</span>">Upgrade to <span>AutoFix Pro</span></h2>
+    <p data-en="Unlock unlimited diagnostics and pro tools for one simple monthly price." data-es="Desbloquea diagnósticos ilimitados y herramientas profesionales por un precio mensual simple.">Unlock unlimited diagnostics and pro tools for one simple monthly price.</p>
+  </div>
+  <div class="pricing-wrap">
+    <div class="plan-card">
+      <div class="plan-name">⭐ <span data-en="AutoFix Pro" data-es="AutoFix Pro">AutoFix Pro</span></div>
+      <div class="plan-price">$9.99 <span data-en="/ month" data-es="/ mes">/ month</span></div>
+      <ul class="plan-feats">
+        <li data-en="Unlimited VIN decodes & OBD-II code lookups" data-es="Decodificaciones VIN y búsquedas de códigos OBD-II ilimitadas">Unlimited VIN decodes &amp; OBD-II code lookups</li>
+        <li data-en="Full TSB & recall reports for every vehicle" data-es="Reportes completos de TSB y recalls para cada vehículo">Full TSB &amp; recall reports for every vehicle</li>
+        <li data-en="Unlimited vehicles in My Garage with repair history" data-es="Vehículos ilimitados en Mi Garaje con historial de reparaciones">Unlimited vehicles in My Garage with repair history</li>
+        <li data-en="Printable service checklists & job sheets" data-es="Listas de servicio y hojas de trabajo imprimibles">Printable service checklists &amp; job sheets</li>
+        <li data-en="Priority support, cancel anytime" data-es="Soporte prioritario, cancela cuando quieras">Priority support, cancel anytime</li>
+      </ul>
+      <button class="btn btn-primary" id="subscribe-btn" onclick="startSubscribe()" data-en="Subscribe — $9.99/mo" data-es="Suscribirse — $9.99/mes">Subscribe — $9.99/mo</button>
+      <div class="plan-note" id="plan-note" data-en="Secure checkout powered by Stripe. Sign in required." data-es="Pago seguro con Stripe. Requiere iniciar sesión.">Secure checkout powered by Stripe. Sign in required.</div>
+      <div class="plan-note" style="margin-top:10px;">
+        <a href="#" id="preview-link" onclick="enterPreview();return false;" style="color:var(--accent);" data-en="Have a test password? Unlock Pro to preview" data-es="¿Tienes una contraseña de prueba? Desbloquea Pro">Have a test password? Unlock Pro to preview</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay hidden" id="auth-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuth()" aria-label="Close">&times;</button>
+    <h2 id="auth-title" data-en="Sign In" data-es="Iniciar Sesión">Sign In</h2>
+    <p class="sub" data-en="Access AutoFix Pro and your saved garage." data-es="Accede a AutoFix Pro y tu garaje guardado.">Access AutoFix Pro and your saved garage.</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-btn-login" onclick="switchAuthMode('login')" data-en="Sign In" data-es="Iniciar Sesión">Sign In</button>
+      <button class="auth-tab" id="tab-btn-signup" onclick="switchAuthMode('signup')" data-en="Register" data-es="Registrarse">Register</button>
+    </div>
+    <div id="signup-name-row" style="display:none;">
+      <label data-en="Full name" data-es="Nombre completo">Full name</label>
+      <input type="text" id="auth-name" placeholder="Jane Mechanic" autocomplete="name">
+    </div>
+    <label data-en="Email" data-es="Correo">Email</label>
+    <input type="email" id="auth-email-input" placeholder="you@example.com" autocomplete="email">
+    <label data-en="Password" data-es="Contraseña">Password</label>
+    <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
+    <div class="auth-msg" id="auth-msg"></div>
+    <button class="btn btn-primary" id="auth-submit" style="width:100%;justify-content:center;margin-top:16px;" onclick="submitAuth()" data-en="Sign In" data-es="Iniciar Sesión">Sign In</button>
+    <p style="text-align:center;margin-top:14px;font-size:0.82rem;">
+      <a href="#" onclick="forgotPassword();return false;" style="color:var(--accent);" data-en="Forgot password?" data-es="¿Olvidaste tu contraseña?">Forgot password?</a>
+    </p>
+  </div>
+</div>
+<footer>
+  <p data-en="AutoFix AI &mdash; Free vehicle diagnostics powered by NHTSA &bull; Data for reference only, always consult a certified technician" data-es="AutoFix AI &mdash; Diagnósticos vehiculares gratuitos powered by NHTSA &bull; Datos de referencia únicamente, consulte siempre un técnico certificado">AutoFix AI &mdash; Free vehicle diagnostics powered by NHTSA &bull; Data for reference only, always consult a certified technician</p>
+</footer>
+
+<script>
+let currentLang = 'en';
+let currentVehicle = null;
+let garage = JSON.parse(localStorage.getItem('autofix_garage') || '[]');
+let history = JSON.parse(localStorage.getItem('autofix_history') || '[]');
+
+const dtcDB = {"P0100":"Mass Air Flow Sensor Circuit Malfunction","P0101":"MAF Sensor Range/Performance","P0102":"MAF Sensor Circuit Low Input","P0103":"MAF Sensor Circuit High Input","P0110":"Intake Air Temp Sensor Circuit","P0111":"IAT Sensor Range/Performance","P0112":"IAT Sensor Circuit Low","P0113":"IAT Sensor Circuit High","P0120":"Throttle Position Sensor/Switch A Circuit","P0121":"TPS Range/Performance","P0122":"TPS Circuit Low Input","P0123":"TPS Circuit High Input","P0130":"O2 Sensor Circuit (Bank 1 Sensor 1)","P0131":"O2 Sensor Low Voltage B1S1","P0132":"O2 Sensor High Voltage B1S1","P0133":"O2 Sensor Slow Response B1S1","P0134":"O2 Sensor No Activity B1S1","P0135":"O2 Sensor Heater Circuit B1S1","P0136":"O2 Sensor Circuit B1S2","P0137":"O2 Sensor Low Voltage B1S2","P0138":"O2 Sensor High Voltage B1S2","P0140":"O2 Sensor No Activity B1S2","P0141":"O2 Sensor Heater Circuit B1S2","P0150":"O2 Sensor Circuit (Bank 2 Sensor 1)","P0155":"O2 Sensor Heater Circuit B2S1","P0156":"O2 Sensor Circuit B2S2","P0161":"O2 Sensor Heater Circuit B2S2","P0170":"Fuel Trim Malfunction Bank 1","P0171":"System Too Lean Bank 1","P0172":"System Too Rich Bank 1","P0174":"System Too Lean Bank 2","P0175":"System Too Rich Bank 2","P0200":"Injector Circuit Malfunction","P0201":"Injector Circuit Cylinder 1","P0202":"Injector Circuit Cylinder 2","P0203":"Injector Circuit Cylinder 3","P0204":"Injector Circuit Cylinder 4","P0205":"Injector Circuit Cylinder 5","P0206":"Injector Circuit Cylinder 6","P0207":"Injector Circuit Cylinder 7","P0208":"Injector Circuit Cylinder 8","P0230":"Fuel Pump Primary Circuit","P0231":"Fuel Pump Secondary Circuit Low","P0232":"Fuel Pump Secondary Circuit High","P0261":"Cylinder 1 Injector Circuit Low","P0262":"Cylinder 1 Injector Circuit High","P0300":"Random/Multiple Cylinder Misfire Detected","P0301":"Cylinder 1 Misfire Detected","P0302":"Cylinder 2 Misfire Detected","P0303":"Cylinder 3 Misfire Detected","P0304":"Cylinder 4 Misfire Detected","P0305":"Cylinder 5 Misfire Detected","P0306":"Cylinder 6 Misfire Detected","P0307":"Cylinder 7 Misfire Detected","P0308":"Cylinder 8 Misfire Detected","P0316":"Misfire Detected on Startup","P0320":"Ignition/Distributor Engine Speed Input Circuit","P0325":"Knock Sensor 1 Circuit","P0326":"Knock Sensor 1 Range/Performance","P0327":"Knock Sensor 1 Low","P0328":"Knock Sensor 1 High","P0330":"Knock Sensor 2 Circuit","P0335":"Crankshaft Position Sensor A Circuit","P0336":"CKP Sensor A Range/Performance","P0337":"CKP Sensor A Low","P0338":"CKP Sensor A High","P0340":"Camshaft Position Sensor A Circuit","P0341":"CMP Sensor A Range/Performance","P0342":"CMP Sensor A Low","P0343":"CMP Sensor A High","P0350":"Ignition Coil Primary/Secondary Circuit","P0351":"Ignition Coil A Primary/Secondary","P0352":"Ignition Coil B","P0353":"Ignition Coil C","P0354":"Ignition Coil D","P0355":"Ignition Coil E","P0356":"Ignition Coil F","P0357":"Ignition Coil G","P0358":"Ignition Coil H","P0400":"Exhaust Gas Recirculation Flow Malfunction","P0401":"EGR Flow Insufficient","P0402":"EGR Flow Excessive","P0403":"EGR Circuit Malfunction","P0404":"EGR Circuit Range/Performance","P0410":"Secondary Air Injection System","P0411":"Secondary Air Injection Incorrect Flow","P0412":"Secondary Air Injection Switching Valve A Circuit","P0420":"Catalyst System Efficiency Below Threshold Bank 1","P0421":"Warm Up Catalyst Efficiency Below Threshold B1","P0430":"Catalyst System Efficiency Below Threshold Bank 2","P0431":"Warm Up Catalyst Efficiency Below Threshold B2","P0440":"Evaporative Emission Control System","P0441":"EVAP System Incorrect Purge Flow","P0442":"EVAP System Small Leak","P0443":"EVAP Purge Control Valve Circuit","P0446":"EVAP System Vent Control Circuit","P0449":"EVAP System Vent Valve/Solenoid Circuit","P0455":"EVAP System Large Leak","P0456":"EVAP System Very Small Leak","P0460":"Fuel Level Sensor Circuit","P0461":"Fuel Level Sensor Range/Performance","P0462":"Fuel Level Sensor Low","P0463":"Fuel Level Sensor High","P0480":"Cooling Fan 1 Control Circuit","P0481":"Cooling Fan 2 Control Circuit","P0483":"Cooling Fan Rationality Check","P0500":"Vehicle Speed Sensor","P0501":"VSS Range/Performance","P0502":"VSS Low Input","P0503":"VSS Intermittent/Erratic/High","P0505":"Idle Control System","P0506":"Idle Control System RPM Low","P0507":"Idle Control System RPM High","P0510":"Closed Throttle Position Switch","P0520":"Engine Oil Pressure Sensor/Switch Circuit","P0521":"Engine Oil Pressure Sensor Range/Performance","P0522":"Engine Oil Pressure Sensor Low","P0523":"Engine Oil Pressure Sensor High","P0530":"A/C Refrigerant Pressure Sensor Circuit","P0532":"A/C Refrigerant Pressure Sensor Low","P0533":"A/C Refrigerant Pressure Sensor High","P0562":"System Voltage Low","P0563":"System Voltage High","P0571":"Cruise Control/Brake Switch A Circuit","P0600":"Serial Communication Link","P0601":"Internal Control Module Memory Check Sum Error","P0602":"Control Module Programming Error","P0606":"PCM Processor Fault","P0607":"Control Module Performance","P0608":"Control Module VSS Output A","P0609":"Control Module VSS Output B","P0620":"Generator Control Circuit","P0621":"Generator Lamp L-Terminal Circuit","P0622":"Generator Field F-Terminal Circuit","P0630":"VIN Not Programmed or Mismatch — ECM/PCM","P0641":"Sensor Reference Voltage A Circuit/Open","P0651":"Sensor Reference Voltage B Circuit/Open","P0700":"Transmission Control System Malfunction","P0705":"Transmission Range Sensor Circuit","P0706":"Transmission Range Sensor Range/Performance","P0711":"Transmission Fluid Temperature Sensor Range/Performance","P0712":"TFT Sensor Low Input","P0713":"TFT Sensor High Input","P0715":"Input/Turbine Speed Sensor Circuit","P0720":"Output Speed Sensor Circuit","P0725":"Engine Speed Input Circuit","P0730":"Incorrect Gear Ratio","P0731":"Gear 1 Incorrect Ratio","P0732":"Gear 2 Incorrect Ratio","P0733":"Gear 3 Incorrect Ratio","P0734":"Gear 4 Incorrect Ratio","P0740":"Torque Converter Clutch Circuit","P0741":"TCC Circuit Performance/Stuck Off","P0742":"TCC Circuit Stuck On","P0748":"Pressure Control Solenoid A Electrical","P0750":"Shift Solenoid A","P0751":"Shift Solenoid A Performance/Stuck Off","P0755":"Shift Solenoid B","P0760":"Shift Solenoid C","P0765":"Shift Solenoid D","P0770":"Shift Solenoid E","P0800":"Transfer Case Control System","P0840":"Transmission Fluid Pressure Sensor/Switch A Circuit","B0001":"Driver Frontal Stage 1 Deployment Control","B0002":"Driver Frontal Stage 2 Deployment Control","B0010":"Passenger Frontal Stage 1 Deployment Control","B0020":"Right Side/Curtain Airbag Deployment","B0051":"Frontal Crash Sensor 1 Circuit","B0055":"Frontal Crash Sensor 2 Circuit","B0070":"Front Seat Belt Pretensioner Deployment","B0085":"Left Side Seat Belt Pretensioner","B1000":"ECU Hardware Failure","B1001":"Option Configuration Error","B1004":"Gate Array Failure","B1327":"Battery Voltage Low","B1342":"ECU Defective","B1352":"Ignition Key In Circuit Failure","B1451":"Lamp — Park Input Circuit Failure","B2477":"Module Configuration Failure","C0031":"Right Front Wheel Speed Sensor Input Circuit","C0032":"Right Front Wheel Speed Sensor Input Circuit Range/Performance","C0034":"Left Front Wheel Speed Sensor Input Circuit","C0035":"Left Front Wheel Speed Sensor Input Circuit Range/Performance","C0037":"Right Rear Wheel Speed Sensor Input Circuit","C0040":"Left Rear Wheel Speed Sensor Input Circuit","C0044":"Left Rear Wheel Speed Sensor Input Circuit Range/Performance","C0051":"Brake Switch Circuit","C0110":"Motor Control Circuit","C0121":"Valve Relay Circuit","C0161":"ABS/TCS Brake Switch Circuit","C0175":"System Thermal High","C0200":"Right Front Wheel Speed Sensor Fault","C0210":"Left Front Wheel Speed Sensor Fault","C0220":"Right Rear Wheel Speed Sensor Fault","C0221":"Left Rear Wheel Speed Sensor Fault","C0235":"Rear Wheel Speed Signal Circuit Open","C0245":"Wheel Speed Sensor Frequency Error","C0265":"EBCM Relay Circuit","C0267":"Pump Motor Circuit Open/Shorted","C0268":"Pump Motor Circuit Open/Shorted","C0550":"Electronic Control Unit Performance","C0561":"System Disabled — Information Not Correct","U0001":"High Speed CAN Communication Bus","U0002":"High Speed CAN Communication Bus Performance","U0010":"Medium Speed CAN Communication Bus","U0019":"Low Speed CAN Communication Bus","U0100":"Lost Communication With ECM/PCM","U0101":"Lost Communication With TCM","U0103":"Lost Communication With Gear Shift Module","U0104":"Lost Communication With Cruise Control Module","U0106":"Lost Communication With Glow Plug Control Module","U0107":"Lost Communication With Throttle Actuator Control Module","U0109":"Lost Communication With Fuel Pump Control Module","U0110":"Lost Communication With Drive Motor Control Module","U0121":"Lost Communication With Anti-Lock Brake System (ABS) Control Module","U0122":"Lost Communication With Vehicle Dynamics Control Module","U0126":"Lost Communication With Steering Angle Sensor Module","U0128":"Lost Communication With Park Brake Control Module","U0131":"Lost Communication With Power Steering Control Module","U0140":"Lost Communication With Body Control Module (BCM)","U0141":"Lost Communication With Body Control Module (BCM) 2","U0142":"Lost Communication With Body Control Module (BCM) 3","U0151":"Lost Communication With Restraints Control Module","U0155":"Lost Communication With Instrument Panel Cluster (IPC) Control Module","U0159":"Lost Communication With Parking Assist Control Module","U0164":"Lost Communication With HVAC Control Module","U0168":"Lost Communication With Vehicle Security Control Module","U0184":"Lost Communication With Radio","U0193":"Lost Communication With Digital Broadcast Receiver","U0195":"Lost Communication With SiriusXM Satellite Radio Receiver","U0196":"Lost Communication With Rear Seat Entertainment Module","U0199":"Lost Communication With Door Control Module","U0200":"Lost Communication With Door Control Module 2","U0214":"Lost Communication With Remote Keyless Entry Module","U0224":"Lost Communication With Wiper Rear Control Module","U0300":"Internal Control Module Software Incompatibility","U0301":"Software Incompatibility With ECM/PCM","U0302":"Software Incompatibility With Transmission Control Module"};
+const dtcDetails = {"P0301":{"causes_en":["Worn or fouled spark plug (Cyl 1)","Faulty ignition coil pack (Cyl 1)","Clogged or leaking fuel injector (Cyl 1)","Low compression in Cylinder 1","Vacuum leak near Cylinder 1","Faulty plug wire (if applicable)","Incorrect fuel pressure","Intake manifold gasket leak"],"causes_es":["Bujía desgastada o contaminada (Cil. 1)","Bobina de encendido defectuosa (Cil. 1)","Inyector obstruido o con fuga (Cil. 1)","Baja compresión en Cilindro 1","Fuga de vacío cerca del Cilindro 1","Cable de bujía defectuoso (si aplica)","Presión de combustible incorrecta","Fuga en junta del múltiple de admisión"],"tests_en":["1. Pull & inspect Cylinder 1 spark plug — look for fouling, gap wear, or damage","2. Swap Cyl 1 coil with another cylinder — if misfire follows coil, replace coil","3. Swap Cyl 1 injector with another cylinder — if misfire follows, replace injector","4. Perform compression test on Cyl 1 (should be 150–200 psi, within 10% of other cylinders)","5. Check for vacuum leaks with propane or smoke machine near Cyl 1 intake","6. Check fuel pressure at rail (should be 40–65 psi depending on system)"],"tests_es":["1. Retire e inspeccione bujía del Cil. 1 — busque contaminación, desgaste de electrodo o daños","2. Intercambie bobina Cil. 1 con otro cilindro — si el fallo sigue a la bobina, reemplácela","3. Intercambie inyector Cil. 1 con otro cilindro — si el fallo sigue, reemplace el inyector","4. Realice prueba de compresión en Cil. 1 (debería ser 150–200 psi, dentro del 10% de otros)","5. Revise fugas de vacío con gas propano o máquina de humo cerca de la admisión del Cil. 1","6. Verifique presión de combustible en el riel (debe ser 40–65 psi según el sistema)"],"fixes_en":["Replace spark plug(s)","Replace ignition coil (Cyl 1)","Clean or replace fuel injector (Cyl 1)","Repair vacuum leak","Rebuild/replace engine if compression is below spec"],"fixes_es":["Reemplazar bujía(s)","Reemplazar bobina de encendido (Cil. 1)","Limpiar o reemplazar inyector de combustible (Cil. 1)","Reparar fuga de vacío","Reconstruir/reemplazar motor si la compresión está por debajo de la especificación"],"severity":"high"},"P0420":{"causes_en":["Catalytic converter degraded or failed","Faulty downstream O2 sensor (Bank 1 Sensor 2)","Rich or lean running engine contaminating cat","Exhaust leaks before the downstream O2 sensor","Faulty upstream O2 sensor giving incorrect readings","Engine oil burning/coolant leaking into combustion"],"causes_es":["Convertidor catalítico degradado o defectuoso","Sensor O2 aguas abajo defectuoso (Banco 1 Sensor 2)","Motor corriendo rico o pobre contaminando el catalizador","Fugas de escape antes del sensor O2 aguas abajo","Sensor O2 aguas arriba defectuoso dando lecturas incorrectas","Aceite quemándose/refrigerante filtrándose a la combustión"],"tests_en":["1. With scan tool, monitor upstream vs downstream O2 sensor waveforms — downstream should be stable (not switching like upstream)","2. Inspect for exhaust leaks before the rear O2 sensor","3. Check upstream O2 sensor switching frequency — should switch rapidly 0.1–0.9V","4. Perform fuel trim check — large positive/negative trims can damage catalyst","5. Inspect catalytic converter for rattle, physical damage, or melted substrate"],"tests_es":["1. Con scanner, monitorea formas de onda de sensores O2 arriba vs abajo — el de abajo debe ser estable (no oscilar como el de arriba)","2. Inspecciona fugas de escape antes del sensor O2 trasero","3. Verifica frecuencia de oscilación del O2 aguas arriba — debe oscilar rápidamente entre 0.1–0.9V","4. Realiza revisión de fuel trim — trims positivos/negativos grandes pueden dañar el catalizador","5. Inspecciona catalizador en busca de ruido, daño físico o sustrato fundido"],"fixes_en":["Replace catalytic converter (most common)","Replace downstream O2 sensor","Fix any misfires or fuel system issues first, then re-test","Repair exhaust leaks"],"fixes_es":["Reemplazar convertidor catalítico (más común)","Reemplazar sensor O2 aguas abajo","Primero corregir cualquier falla de encendido o sistema de combustible, luego re-probar","Reparar fugas de escape"],"severity":"medium"},"P0171":{"causes_en":["Vacuum/air leak after MAF sensor","Dirty or faulty MAF sensor","Weak fuel pump or clogged fuel filter","Clogged or leaking fuel injectors","Faulty fuel pressure regulator","PCV system leak","Exhaust leak before upstream O2 sensor (false lean reading)"],"causes_es":["Fuga de vacío/aire después del sensor MAF","Sensor MAF sucio o defectuoso","Bomba de combustible débil o filtro de combustible obstruido","Inyectores de combustible obstruidos o con fuga","Regulador de presión de combustible defectuoso","Fuga en el sistema PCV","Fuga de escape antes del sensor O2 aguas arriba (lectura falsa pobre)"],"tests_en":["1. Check for vacuum leaks — spray carburetor cleaner or use smoke machine","2. Clean MAF sensor with MAF-specific cleaner — retest","3. Check fuel pressure (key on engine off, then running)","4. Monitor short-term and long-term fuel trims with scan tool — LTFT over +10% indicates lean condition","5. Inspect PCV hoses for cracks or disconnection"],"tests_es":["1. Revisar fugas de vacío — rociar limpiador de carburador o usar máquina de humo","2. Limpiar sensor MAF con limpiador específico para MAF — volver a probar","3. Verificar presión de combustible (llave encendida motor apagado, luego en marcha)","4. Monitorear fuel trims de corto y largo plazo con escáner — LTFT mayor a +10% indica condición pobre","5. Inspeccionar mangueras PCV en busca de grietas o desconexión"],"fixes_en":["Fix vacuum leaks (replace hoses, gaskets, intake boots)","Clean or replace MAF sensor","Replace fuel filter","Replace fuel pump if pressure is low","Replace fuel pressure regulator"],"fixes_es":["Reparar fugas de vacío (reemplazar mangueras, juntas, botas de admisión)","Limpiar o reemplazar sensor MAF","Reemplazar filtro de combustible","Reemplazar bomba de combustible si la presión es baja","Reemplazar regulador de presión de combustible"],"severity":"medium"},"P0300":{"causes_en":["Multiple worn spark plugs","Distributor cap/rotor (if applicable)","Faulty ignition module","Low or uneven fuel pressure","Vacuum leak affecting multiple cylinders","EGR system malfunction","Faulty crankshaft position sensor","Engine mechanical issue (timing, head gasket)"],"causes_es":["Múltiples bujías desgastadas","Tapa del distribuidor/rotor (si aplica)","Módulo de encendido defectuoso","Presión de combustible baja o irregular","Fuga de vacío que afecta múltiples cilindros","Mal funcionamiento del sistema EGR","Sensor de posición del cigüeñal defectuoso","Problema mecánico del motor (sincronización, junta de cabeza)"],"tests_en":["1. Inspect all spark plugs — replace if due","2. Check ignition coil resistance with multimeter","3. Monitor individual cylinder misfires with scan tool","4. Check fuel pressure and injector pulse width","5. Run compression test on all cylinders","6. Check timing with timing light or scan tool live data"],"tests_es":["1. Inspeccionar todas las bujías — reemplazar si corresponde","2. Verificar resistencia de bobinas de encendido con multímetro","3. Monitorear fallos de encendido por cilindro individual con escáner","4. Verificar presión de combustible y ancho de pulso del inyector","5. Realizar prueba de compresión en todos los cilindros","6. Verificar sincronización con lámpara de tiempo o datos en vivo del escáner"],"fixes_en":["Replace all spark plugs (tune-up)","Replace ignition coils as needed","Replace distributor cap/rotor","Repair vacuum leaks","Address fuel system issues"],"fixes_es":["Reemplazar todas las bujías (afinación)","Reemplazar bobinas de encendido según sea necesario","Reemplazar tapa del distribuidor/rotor","Reparar fugas de vacío","Atender problemas del sistema de combustible"],"severity":"high"}};
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const txt = el.getAttribute('data-' + lang);
+    if (txt) el.innerHTML = txt;
+  });
+  document.querySelectorAll('[data-en-placeholder]').forEach(el => {
+    const ph = el.getAttribute('data-' + lang + '-placeholder');
+    if (ph) el.placeholder = ph;
+  });
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.lang-btn[onclick="setLang(\''+lang+'\')"]').classList.add('active');
+  // Keep any visible access gate in the freshly selected language.
+  if (window.applyGate) {
+    const activeTab = document.querySelector('.tab-content.active');
+    if (activeTab) window.applyGate(activeTab.id.replace('tab-', ''));
+  }
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => { const oc = b.getAttribute('onclick') || ''; if (oc.includes("showTab('" + name + "')")) b.classList.add('active'); });
+  const allowed = !window.applyGate || window.applyGate(name);
+  if (name === 'garage' && allowed) renderGarage();
+  if (name === 'pricing' && window.onPricingShown) window.onPricingShown();
+}
+
+// YEAR SELECTOR INIT
+function initYearSelector() {
+  const sel = document.getElementById('sel-year');
+  const curYear = new Date().getFullYear();
+  for (let y = curYear + 1; y >= 1981; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    sel.appendChild(opt);
+  }
+}
+
+async function loadMakes() {
+  const year = document.getElementById('sel-year').value;
+  if (!year) return;
+  const sel = document.getElementById('sel-make');
+  sel.innerHTML = '<option value="">Loading...</option>';
+  try {
+    const r = await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/car?format=json');
+    const d = await r.json();
+    sel.innerHTML = '<option value="">-- Make / Marca --</option>';
+    d.Results.sort((a,b) => a.MakeName.localeCompare(b.MakeName)).forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.MakeName;
+      o.textContent = m.MakeName;
+      sel.appendChild(o);
+    });
+  } catch(e) {
+    sel.innerHTML = '<option value="">-- Make / Marca --</option>';
+  }
+}
+
+async function loadModels() {
+  const year = document.getElementById('sel-year').value;
+  const make = document.getElementById('sel-make').value;
+  if (!year || !make) return;
+  const sel = document.getElementById('sel-model');
+  sel.innerHTML = '<option value="">Loading...</option>';
+  try {
+    const r = await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/'+encodeURIComponent(make)+'/modelyear/'+year+'?format=json');
+    const d = await r.json();
+    sel.innerHTML = '<option value="">-- Model / Modelo --</option>';
+    d.Results.sort((a,b) => a.Model_Name.localeCompare(b.Model_Name)).forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.Model_Name;
+      o.textContent = m.Model_Name;
+      sel.appendChild(o);
+    });
+  } catch(e) {
+    sel.innerHTML = '<option value="">-- Model / Modelo --</option>';
+  }
+}
+
+function loadTrims() {}
+
+async function decodeVIN() {
+  const vin = document.getElementById('vin-input').value.trim().toUpperCase();
+  if (vin.length !== 17) {
+    document.getElementById('vin-result').innerHTML = '<div class="error-msg">' + (currentLang === 'en' ? '⚠️ Please enter a valid 17-character VIN.' : '⚠️ Por favor ingresa un VIN válido de 17 caracteres.') + '</div>';
+    return;
+  }
+  document.getElementById('vin-result').innerHTML = '<div class="loading">' + (currentLang === 'en' ? '🔄 Decoding VIN...' : '🔄 Decodificando VIN...') + '</div>';
+  try {
+    const r = await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/'+vin+'?format=json');
+    const d = await r.json();
+    const v = d.Results[0];
+    if (!v || !v.Make) throw new Error('No data');
+    currentVehicle = { vin, year: v.ModelYear, make: v.Make, model: v.Model, engine: v.DisplacementL ? v.DisplacementL+'L '+v.EngineCylinders+'-cyl' : v.EngineModel, trim: v.Trim, body: v.BodyClass, fuel: v.FuelTypePrimary, drive: v.DriveType, transmission: v.TransmissionStyle, doors: v.Doors, country: v.PlantCountry, mfr: v.Manufacturer };
+    renderVINResult(v);
+    renderSpecs(v);
+  } catch(e) {
+    document.getElementById('vin-result').innerHTML = '<div class="error-msg">' + (currentLang === 'en' ? '❌ Could not decode VIN. Check the number and try again.' : '❌ No se pudo decodificar el VIN. Verifica el número e intenta de nuevo.') + '</div>';
+  }
+}
+
+function renderVINResult(v) {
+  const fields = [
+    {label: currentLang==='en'?'Year':'Año', val: v.ModelYear},
+    {label: currentLang==='en'?'Make':'Marca', val: v.Make},
+    {label: currentLang==='en'?'Model':'Modelo', val: v.Model},
+    {label: currentLang==='en'?'Trim':'Versión', val: v.Trim || 'N/A'},
+    {label: currentLang==='en'?'Body Style':'Carrocería', val: v.BodyClass || 'N/A'},
+    {label: currentLang==='en'?'Engine':'Motor', val: (v.DisplacementL?v.DisplacementL+'L ':'') + (v.EngineCylinders?v.EngineCylinders+'-cyl ':'') + (v.EngineModel||'')},
+    {label: currentLang==='en'?'Fuel Type':'Combustible', val: v.FuelTypePrimary || 'N/A'},
+    {label: currentLang==='en'?'Drive Type':'Tracción', val: v.DriveType || 'N/A'},
+    {label: currentLang==='en'?'Transmission':'Transmisión', val: v.TransmissionStyle || 'N/A'},
+    {label: currentLang==='en'?'Doors':'Puertas', val: v.Doors || 'N/A'},
+    {label: currentLang==='en'?'Manufacturer':'Fabricante', val: v.Manufacturer || 'N/A'},
+    {label: currentLang==='en'?'Plant Country':'País de Fabricación', val: v.PlantCountry || 'N/A'},
+    {label: 'GVWR', val: v.GVWR || 'N/A'},
+    {label: 'VIN', val: v.VIN || 'N/A'},
+  ];
+  let html = '<div class="result-box">';
+  html += '<h3 style="margin-bottom:12px;color:var(--success);">✅ ' + (currentLang==='en'?'Vehicle Identified:':'Vehículo Identificado:') + ' ' + v.ModelYear + ' ' + v.Make + ' ' + v.Model + '</h3>';
+  html += '<div class="result-grid">';
+  fields.forEach(f => {
+    if (f.val && f.val !== 'N/A' && f.val.trim() !== '') {
+      html += '<div class="result-item"><label>' + f.label + '</label><span>' + f.val + '</span></div>';
+    }
+  });
+  html += '</div>';
+  html += '<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">';
+  html += '<button class="btn btn-secondary" onclick="saveCurrentVehicle()" data-en="💾 Save to Garage" data-es="💾 Guardar en Garaje">' + (currentLang==='en'?'💾 Save to Garage':'💾 Guardar en Garaje') + '</button>';
+  html += '<button class="btn btn-secondary" onclick="checkRecallsFromVIN()" data-en="📋 Check Recalls" data-es="📋 Ver Recalls">' + (currentLang==='en'?'📋 Check Recalls':'📋 Ver Recalls') + '</button>';
+  html += '</div></div>';
+  document.getElementById('vin-result').innerHTML = html;
+}
+
+function renderSpecs(v) {
+  const card = document.getElementById('specs-card');
+  const grid = document.getElementById('specs-result');
+  card.style.display = 'block';
+  const specs = [
+    {lbl: currentLang==='en'?'Engine Displacement':'Cilindrada', val: v.DisplacementL ? v.DisplacementL + ' L' : 'N/A'},
+    {lbl: currentLang==='en'?'Cylinders':'Cilindros', val: v.EngineCylinders || 'N/A'},
+    {lbl: currentLang==='en'?'Engine Config':'Config. Motor', val: v.EngineConfiguration || 'N/A'},
+    {lbl: currentLang==='en'?'Valve Config':'Config. Válvulas', val: v.ValveTrainDesign || 'N/A'},
+    {lbl: currentLang==='en'?'Fuel Injection':'Inyección', val: v.FuelInjectionType || 'N/A'},
+    {lbl: currentLang==='en'?'Turbo':'Turbo', val: v.Turbo || 'N/A'},
+    {lbl: currentLang==='en'?'Displacement (cc)':'Cilindrada (cc)', val: v.DisplacementCC ? Math.round(v.DisplacementCC) + ' cc' : 'N/A'},
+    {lbl: currentLang==='en'?'Displacement (ci)':'Cilindrada (ci)', val: v.DisplacementCI ? Math.round(v.DisplacementCI) + ' ci' : 'N/A'},
+    {lbl: currentLang==='en'?'Drive Type':'Tracción', val: v.DriveType || 'N/A'},
+    {lbl: currentLang==='en'?'Transmission':'Transmisión', val: v.TransmissionStyle || 'N/A'},
+    {lbl: currentLang==='en'?'# of Gears':'# de Marchas', val: v.TransmissionSpeeds || 'N/A'},
+    {lbl: currentLang==='en'?'GVWR Class':'Clase GVWR', val: v.GVWR || 'N/A'},
+  ];
+  grid.innerHTML = specs.filter(s => s.val && s.val !== 'N/A').map(s => '<div class="spec-box"><div class="val">' + s.val + '</div><div class="lbl">' + s.lbl + '</div></div>').join('');
+}
+
+async function lookupBySelector() {
+  const year = document.getElementById('sel-year').value;
+  const make = document.getElementById('sel-make').value;
+  const model = document.getElementById('sel-model').value;
+  if (!year || !make || !model) {
+    document.getElementById('vin-result').innerHTML = '<div class="error-msg">' + (currentLang==='en'?'⚠️ Please select Year, Make and Model.':'⚠️ Por favor selecciona Año, Marca y Modelo.') + '</div>';
+    return;
+  }
+  currentVehicle = { year, make, model, engine: '' };
+  document.getElementById('vin-result').innerHTML = '<div class="result-box"><h3 style="color:var(--success);">✅ ' + year + ' ' + make + ' ' + model + '</h3><p style="color:var(--text2);margin-top:8px;">' + (currentLang==='en'?'Enter a VIN for full specifications.':'Ingresa un VIN para especificaciones completas.') + '</p><div style="margin-top:14px;"><button class="btn btn-secondary" onclick="checkRecallsFromVIN()">' + (currentLang==='en'?'📋 Check Recalls':'📋 Ver Recalls') + '</button></div></div>';
+  document.getElementById('specs-card').style.display = 'none';
+}
+
+function saveCurrentVehicle() {
+  if (!currentVehicle) return;
+  const exists = garage.find(v => v.vin === currentVehicle.vin && currentVehicle.vin);
+  if (exists) {
+    alert(currentLang === 'en' ? 'Vehicle already in garage!' : '¡Vehículo ya está en el garaje!');
+    return;
+  }
+  currentVehicle.id = Date.now();
+  currentVehicle.nickname = currentVehicle.year + ' ' + currentVehicle.make + ' ' + currentVehicle.model;
+  garage.push(currentVehicle);
+  localStorage.setItem('autofix_garage', JSON.stringify(garage));
+  alert(currentLang === 'en' ? '✅ Vehicle saved to garage!' : '✅ ¡Vehículo guardado en el garaje!');
+}
+
+async function checkRecallsFromVIN() {
+  if (!currentVehicle) return;
+  showTab2('recalls');
+  if (currentVehicle.vin) {
+    document.getElementById('r-vin').value = currentVehicle.vin;
+    await lookupRecallsByVIN();
+  } else {
+    document.getElementById('r-year').value = currentVehicle.year || '';
+    document.getElementById('r-make').value = currentVehicle.make || '';
+    document.getElementById('r-model').value = currentVehicle.model || '';
+    await lookupRecalls();
+  }
+}
+
+function showTab2(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => { if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(name)) b.classList.add('active'); });
+}
+
+function getDTCGenericDesc(code) {
+  const upper = code.toUpperCase();
+  if (dtcDB[upper]) return dtcDB[upper];
+  const prefix = upper.charAt(0);
+  const num = parseInt(upper.substring(1));
+  if (prefix === 'P') {
+    if (num >= 300 && num <= 308) return 'Cylinder ' + (num - 299) + ' Misfire Detected';
+    if (num >= 200 && num <= 212) return 'Fuel Injector Circuit - Cylinder ' + (num - 199);
+    if (num >= 350 && num <= 358) return 'Ignition Coil ' + String.fromCharCode(64 + (num - 349)) + ' Primary/Secondary Circuit';
+  }
+  return null;
+}
+
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function vehiclePayload() {
+  if (!currentVehicle) return null;
+  return {
+    vin: currentVehicle.vin || '',
+    year: currentVehicle.year || '',
+    make: currentVehicle.make || '',
+    model: currentVehicle.model || '',
+    engine: currentVehicle.engine || '',
+    trim: currentVehicle.trim || '',
+    fuel: currentVehicle.fuel || '',
+    drive: currentVehicle.drive || '',
+    transmission: currentVehicle.transmission || ''
+  };
+}
+
+async function lookupDTC() {
+  const raw = document.getElementById('dtc-input').value.trim().toUpperCase();
+  if (!/^[PBCU][0-9A-F]{4}$/.test(raw)) {
+    document.getElementById('dtc-result').innerHTML = '<div class="error-msg">' + (currentLang==='en'?'⚠️ Please enter a valid OBD-II code (e.g. P0301)':'⚠️ Ingresa un código OBD-II válido (ej. P0301)') + '</div>';
+    return;
+  }
+  const vehName = currentVehicle ? escapeHtml(currentVehicle.year + ' ' + currentVehicle.make + ' ' + currentVehicle.model) : '';
+  document.getElementById('dtc-result').innerHTML = '<div class="loading">' + (currentLang==='en'?('🤖 Analyzing code with AI' + (vehName ? ' for your ' + vehName : '') + '...'):('🤖 Analizando código con IA' + (vehName ? ' para tu ' + vehName : '') + '...')) + '</div>';
+
+  try {
+    const r = await fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: raw, vehicle: vehiclePayload(), lang: currentLang })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    renderDTCResult(raw, data);
+    logDTCHistory(raw, data.name);
+  } catch (e) {
+    renderDTCFallback(raw);
+  }
+}
+
+function renderDTCResult(raw, data) {
+  const sevMap = {
+    high: ['sev-high', '🔴 ' + (currentLang==='en'?'High — Do not drive, may cause further damage':'Alto — No manejar, puede causar más daños')],
+    medium: ['sev-med', '🟡 ' + (currentLang==='en'?'Medium — Drive with caution, repair soon':'Medio — Manejar con cuidado, reparar pronto')],
+    low: ['sev-low', '🟢 ' + (currentLang==='en'?'Low — Monitor and repair when convenient':'Bajo — Monitorear y reparar cuando sea conveniente')]
+  };
+  const sv = sevMap[data.severity] || sevMap.medium;
+  const list = (arr) => '<ul class="dtc-list">' + (arr||[]).map(x => '<li>' + escapeHtml(x) + '</li>').join('') + '</ul>';
+
+  let html = '<div class="result-box">';
+  html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;flex-wrap:wrap;">';
+  html += '<span style="font-family:monospace;font-size:1.8rem;font-weight:700;color:var(--primary)">' + escapeHtml(raw) + '</span>';
+  html += '<span style="font-size:1rem;color:var(--text)">' + escapeHtml(data.name || '') + '</span>';
+  html += '<span class="tag tag-tsb">🤖 ' + (currentLang==='en'?'AI Diagnosis':'Diagnóstico IA') + '</span>';
+  html += '</div>';
+  if (data.vehicle) {
+    html += '<p style="color:var(--accent);font-size:0.85rem;margin-bottom:14px;">🚗 ' + (currentLang==='en'?'Tailored to':'Adaptado a') + ': ' + escapeHtml(data.vehicle) + '</p>';
+  }
+  html += '<div class="result-grid">';
+  html += '<div class="result-item"><label>' + (currentLang==='en'?'System':'Sistema') + '</label><span>' + escapeHtml(data.system || '') + '</span></div>';
+  html += '<div class="result-item"><label>' + (currentLang==='en'?'Code Type':'Tipo de Código') + '</label><span>' + escapeHtml(data.code_type || (raw.charAt(1)==='0'?(currentLang==='en'?'Generic (SAE)':'Genérico (SAE)'):(currentLang==='en'?'Manufacturer-specific':'Específico del Fabricante'))) + '</span></div>';
+  html += '<div class="result-item" style="grid-column:1/-1"><label>' + (currentLang==='en'?'Severity / Drive Status':'Severidad / Estado para Manejar') + '</label><span><span class="severity-badge ' + sv[0] + '">' + sv[1] + '</span></span></div>';
+  if (data.severity_note) {
+    html += '<div class="result-item" style="grid-column:1/-1"><span style="font-weight:400;color:var(--text2);">' + escapeHtml(data.severity_note) + '</span></div>';
+  }
+  html += '</div>';
+
+  if (data.vehicle_note) {
+    html += '<div class="dtc-section"><h3>' + (currentLang==='en'?'📌 For This Vehicle':'📌 Para Este Vehículo') + '</h3><p style="font-size:0.9rem;color:var(--text);">' + escapeHtml(data.vehicle_note) + '</p></div>';
+  }
+  if (data.causes && data.causes.length) html += '<div class="dtc-section"><h3>' + (currentLang==='en'?'🔍 Possible Causes':'🔍 Posibles Causas') + '</h3>' + list(data.causes) + '</div>';
+  if (data.tests && data.tests.length) html += '<div class="dtc-section"><h3>' + (currentLang==='en'?'🧪 How to Test':'🧪 Cómo Probar') + '</h3>' + list(data.tests) + '</div>';
+  if (data.fixes && data.fixes.length) html += '<div class="dtc-section"><h3>' + (currentLang==='en'?'🔧 Common Fixes':'🔧 Soluciones Comunes') + '</h3>' + list(data.fixes) + '</div>';
+  if (data.repair_estimate) html += '<div class="dtc-section"><h3>' + (currentLang==='en'?'💲 Estimated Repair':'💲 Reparación Estimada') + '</h3><p style="font-size:0.9rem;color:var(--text);">' + escapeHtml(data.repair_estimate) + '</p></div>';
+
+  if (!currentVehicle) {
+    html += '<div class="dtc-section"><p style="color:var(--text2);font-size:0.85rem;">💡 ' + (currentLang==='en'?'Decode a VIN or pick a vehicle from My Garage to get diagnostics tailored to your exact make, model and engine.':'Decodifica un VIN o elige un vehículo de Mi Garaje para obtener diagnósticos adaptados a tu marca, modelo y motor exactos.') + '</p></div>';
+  }
+  html += '<p style="color:var(--text2);font-size:0.78rem;margin-top:14px;">⚠️ ' + (currentLang==='en'?'AI-generated guidance for reference. Always verify with proper testing and consult a certified technician.':'Guía generada por IA solo como referencia. Verifica siempre con pruebas adecuadas y consulta a un técnico certificado.') + '</p>';
+  html += '</div>';
+  document.getElementById('dtc-result').innerHTML = html;
+}
+
+// Offline fallback using the bundled code list if the AI service is unreachable.
+function renderDTCFallback(raw) {
+  const desc = getDTCGenericDesc(raw);
+  const details = dtcDetails[raw];
+  const prefix = raw.charAt(0);
+  const sysMap = { P: currentLang==='en'?'Powertrain':'Tren de Potencia', B: currentLang==='en'?'Body':'Carrocería', C: currentLang==='en'?'Chassis':'Chasis', U: currentLang==='en'?'Network/Communication':'Red/Comunicación' };
+  let html = '<div class="result-box">';
+  html += '<div class="error-msg" style="margin-top:0;margin-bottom:16px;">' + (currentLang==='en'?'⚠️ AI diagnosis is temporarily unavailable — showing offline reference data.':'⚠️ El diagnóstico con IA no está disponible — mostrando datos de referencia sin conexión.') + '</div>';
+  html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">';
+  html += '<span style="font-family:monospace;font-size:1.8rem;font-weight:700;color:var(--primary)">' + escapeHtml(raw) + '</span>';
+  html += '<span style="font-size:1rem;color:var(--text)">' + escapeHtml(desc || (currentLang==='en'?'Code recognized':'Código reconocido')) + '</span>';
+  html += '</div>';
+  html += '<div class="result-grid"><div class="result-item"><label>' + (currentLang==='en'?'System':'Sistema') + '</label><span>' + (sysMap[prefix] || 'Unknown') + '</span></div></div>';
+  if (details) {
+    const causes = currentLang === 'en' ? details.causes_en : details.causes_es;
+    const tests = currentLang === 'en' ? details.tests_en : details.tests_es;
+    const fixes = currentLang === 'en' ? details.fixes_en : details.fixes_es;
+    html += '<div class="dtc-section"><h3>' + (currentLang==='en'?'🔍 Possible Causes':'🔍 Posibles Causas') + '</h3><ul class="dtc-list">' + causes.map(c => '<li>' + escapeHtml(c) + '</li>').join('') + '</ul></div>';
+    html += '<div class="dtc-section"><h3>' + (currentLang==='en'?'🧪 How to Test':'🧪 Cómo Probar') + '</h3><ul class="dtc-list">' + tests.map(t => '<li>' + escapeHtml(t) + '</li>').join('') + '</ul></div>';
+    html += '<div class="dtc-section"><h3>' + (currentLang==='en'?'🔧 Common Fixes':'🔧 Soluciones Comunes') + '</h3><ul class="dtc-list">' + fixes.map(f => '<li>' + escapeHtml(f) + '</li>').join('') + '</ul></div>';
+  } else {
+    html += '<div class="dtc-section"><p style="color:var(--text2);font-size:0.9rem;">' + (currentLang==='en'?'Please try again in a moment to get full AI diagnostics for this code.':'Intenta de nuevo en un momento para obtener el diagnóstico completo con IA para este código.') + '</p></div>';
+  }
+  html += '</div>';
+  document.getElementById('dtc-result').innerHTML = html;
+  logDTCHistory(raw, desc);
+}
+
+function logDTCHistory(raw, desc) {
+  if (!currentVehicle) return;
+  const entry = { id: Date.now(), vehicleId: currentVehicle.id || 0, vin: currentVehicle.vin || '', vehicle: currentVehicle.year + ' ' + currentVehicle.make + ' ' + currentVehicle.model, code: raw, desc: desc || 'Unknown', date: new Date().toLocaleDateString(), resolved: false, notes: '' };
+  history.unshift(entry);
+  localStorage.setItem('autofix_history', JSON.stringify(history));
+  document.getElementById('dtc-related-card').style.display = 'block';
+  loadRelatedTSBsForDTC();
+}
+
+async function loadRelatedTSBsForDTC() {
+  if (!currentVehicle) return;
+  const el = document.getElementById('dtc-tsb-result');
+  el.innerHTML = '<div class="loading">' + (currentLang==='en'?'Loading recalls...':'Cargando recalls...') + '</div>';
+  try {
+    let url;
+    if (currentVehicle.vin) {
+      url = 'https://api.nhtsa.gov/recalls/recallsByVehicle?make=' + encodeURIComponent(currentVehicle.make||'') + '&model=' + encodeURIComponent(currentVehicle.model||'') + '&modelYear=' + encodeURIComponent(currentVehicle.year||'');
+    } else {
+      url = 'https://api.nhtsa.gov/recalls/recallsByVehicle?make=' + encodeURIComponent(currentVehicle.make||'') + '&model=' + encodeURIComponent(currentVehicle.model||'') + '&modelYear=' + encodeURIComponent(currentVehicle.year||'');
+    }
+    const r = await fetch(url);
+    const d = await r.json();
+    if (!d.results || d.results.length === 0) {
+      el.innerHTML = '<p style="color:var(--text2);">' + (currentLang==='en'?'No NHTSA recalls found for this vehicle.':'No se encontraron recalls NHTSA para este vehículo.') + '</p>';
+      return;
+    }
+    renderRecallsTable(el, d.results);
+  } catch(e) {
+    el.innerHTML = '<div class="error-msg">' + (currentLang==='en'?'Error fetching recalls.':'Error al obtener recalls.') + '</div>';
+  }
+}
+
+async function lookupRecalls() {
+  const year = document.getElementById('r-year').value.trim();
+  const make = document.getElementById('r-make').value.trim();
+  const model = document.getElementById('r-model').value.trim();
+  if (!make || !model || !year) {
+    document.getElementById('recalls-result').innerHTML = '<div class="error-msg">' + (currentLang==='en'?'⚠️ Please enter Year, Make and Model.':'⚠️ Ingresa Año, Marca y Modelo.') + '</div>';
+    return;
+  }
+  document.getElementById('recalls-result').innerHTML = '<div class="loading">' + (currentLang==='en'?'🔄 Searching NHTSA recalls...':'🔄 Buscando recalls NHTSA...') + '</div>';
+  try {
+    const r = await fetch('https://api.nhtsa.gov/recalls/recallsByVehicle?make=' + encodeURIComponent(make) + '&model=' + encodeURIComponent(model) + '&modelYear=' + encodeURIComponent(year));
+    const d = await r.json();
+    const el = document.getElementById('recalls-result');
+    if (!d.results || d.results.length === 0) {
+      el.innerHTML = '<div class="success-msg">' + (currentLang==='en'?'✅ No NHTSA recalls found for this vehicle.':'✅ No se encontraron recalls NHTSA para este vehículo.') + '</div>';
+      return;
+    }
+    renderRecallsTable(el, d.results);
+  } catch(e) {
+    document.getElementById('recalls-result').innerHTML = '<div class="error-msg">' + (currentLang==='en'?'❌ Error fetching recall data.':'❌ Error al obtener datos de recall.') + '</div>';
+  }
+}
+
+async function lookupRecallsByVIN() {
+  const vin = document.getElementById('r-vin').value.trim().toUpperCase();
+  if (vin.length !== 17) {
+    document.getElementById('recalls-result').innerHTML = '<div class="error-msg">' + (currentLang==='en'?'⚠️ Please enter a valid 17-character VIN.':'⚠️ Por favor ingresa un VIN válido de 17 caracteres.') + '</div>';
+    return;
+  }
+  document.getElementById('recalls-result').innerHTML = '<div class="loading">' + (currentLang==='en'?'🔄 Checking VIN for recalls...':'🔄 Verificando VIN en busca de recalls...') + '</div>';
+  try {
+    const r = await fetch('https://api.nhtsa.gov/recalls/recallsByVehicle?vin=' + vin);
+    const d = await r.json();
+    const el = document.getElementById('recalls-result');
+    if (!d.results || d.results.length === 0) {
+      el.innerHTML = '<div class="success-msg">' + (currentLang==='en'?'✅ No open recalls found for this VIN.':'✅ No se encontraron recalls abiertos para este VIN.') + '</div>';
+      return;
+    }
+    renderRecallsTable(el, d.results);
+  } catch(e) {
+    document.getElementById('recalls-result').innerHTML = '<div class="error-msg">' + (currentLang==='en'?'❌ Error checking VIN.':'❌ Error al verificar VIN.') + '</div>';
+  }
+}
+
+function renderRecallsTable(el, results) {
+  let html = '<div style="margin-bottom:10px;"><span style="color:var(--warning);font-weight:600;">⚠️ ' + results.length + (currentLang==='en'?' recall(s) found':' recall(s) encontrado(s)') + '</span></div>';
+  html += '<div style="overflow-x:auto;"><table class="recall-table"><thead><tr>';
+  html += '<th>' + (currentLang==='en'?'Recall #':'# Recall') + '</th>';
+  html += '<th>' + (currentLang==='en'?'Date':'Fecha') + '</th>';
+  html += '<th>' + (currentLang==='en'?'Component':'Componente') + '</th>';
+  html += '<th>' + (currentLang==='en'?'Summary':'Resumen') + '</th>';
+  html += '<th>' + (currentLang==='en'?'Remedy':'Remedio') + '</th>';
+  html += '</tr></thead><tbody>';
+  results.forEach(r => {
+    html += '<tr><td><span class="tag tag-recall">RECALL</span><br>' + (r.NHTSACampaignNumber||r.campaignNumber||'N/A') + '</td>';
+    html += '<td>' + (r.ReportReceivedDate||r.reportReceivedDate||'N/A') + '</td>';
+    html += '<td>' + (r.Component||r.component||'N/A') + '</td>';
+    html += '<td>' + (r.Summary||r.consequence||r.defectSummary||'N/A') + '</td>';
+    html += '<td>' + (r.Remedy||r.remedy||r.correctiveAction||'N/A') + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function showAddVehicle() { document.getElementById('add-vehicle-form').classList.remove('hidden'); }
+function hideAddVehicle() { document.getElementById('add-vehicle-form').classList.add('hidden'); }
+
+function addVehicle() {
+  const v = {
+    id: Date.now(),
+    vin: document.getElementById('new-vin').value.trim().toUpperCase(),
+    year: document.getElementById('new-year').value.trim(),
+    make: document.getElementById('new-make').value.trim(),
+    model: document.getElementById('new-model').value.trim(),
+    engine: document.getElementById('new-engine').value.trim(),
+    nickname: document.getElementById('new-nickname').value.trim()
+  };
+  if (!v.year || !v.make || !v.model) {
+    alert(currentLang==='en'?'Please enter at least Year, Make and Model.':'Por favor ingresa al menos Año, Marca y Modelo.');
+    return;
+  }
+  if (!v.nickname) v.nickname = v.year + ' ' + v.make + ' ' + v.model;
+  garage.push(v);
+  localStorage.setItem('autofix_garage', JSON.stringify(garage));
+  hideAddVehicle();
+  ['new-vin','new-year','new-make','new-model','new-engine','new-nickname'].forEach(id => document.getElementById(id).value = '');
+  renderGarage();
+}
+
+function renderGarage() {
+  const el = document.getElementById('garage-list');
+  if (garage.length === 0) {
+    el.innerHTML = '<div style="color:var(--text2);text-align:center;padding:32px;">' + (currentLang==='en'?'🚗 No vehicles saved yet. Add your first vehicle above!':'🚗 No hay vehículos guardados. ¡Agrega tu primer vehículo arriba!') + '</div>';
+    return;
+  }
+  el.innerHTML = garage.map(v => {
+    const vHistory = history.filter(h => h.vehicleId === v.id || (v.vin && h.vin === v.vin));
+    const openCodes = vHistory.filter(h => !h.resolved).length;
+    return '<div class="vehicle-card"><h3>' + v.nickname + '</h3><p>' + v.year + ' ' + v.make + ' ' + v.model + (v.engine?' — '+v.engine:'') + '</p>' + (v.vin?'<div class="vin-code">VIN: ' + v.vin + '</div>':'') + '<div style="margin-top:10px;font-size:0.82rem;color:var(--text2);">' + vHistory.length + (currentLang==='en'?' check(s)':' revisión(es)') + (openCodes > 0 ? ' · <span style="color:var(--danger);">'+openCodes+' open</span>':'') + '</div><div class="card-actions"><button class="btn btn-secondary" style="font-size:0.8rem;padding:8px 12px;" onclick="selectVehicleFromGarage('+v.id+')">' + (currentLang==='en'?'🔧 Diagnose':'🔧 Diagnosticar') + '</button><button class="btn btn-secondary" style="font-size:0.8rem;padding:8px 12px;" onclick="showVehicleHistory('+v.id+')">' + (currentLang==='en'?'📜 History':'📜 Historial') + '</button><button class="btn btn-secondary" style="font-size:0.8rem;padding:8px 12px;color:var(--danger);" onclick="deleteVehicle('+v.id+')">' + (currentLang==='en'?'🗑 Delete':'🗑 Eliminar') + '</button></div></div>';
+  }).join('');
+}
+
+function selectVehicleFromGarage(id) {
+  const v = garage.find(x => x.id === id);
+  if (!v) return;
+  currentVehicle = v;
+  showTab2('dtc');
+  document.getElementById('dtc-result').innerHTML = '<div class="success-msg">✅ ' + (currentLang==='en'?'Active vehicle set to: ':'Vehículo activo: ') + v.nickname + '. ' + (currentLang==='en'?'Enter a code below.':'Ingresa un código abajo.') + '</div>';
+}
+
+function showVehicleHistory(id) {
+  const v = garage.find(x => x.id === id);
+  if (!v) return;
+  const vHistory = history.filter(h => h.vehicleId === id || (v.vin && h.vin === v.vin));
+  const card = document.getElementById('history-card');
+  const el = document.getElementById('history-list');
+  document.getElementById('history-vehicle-name').textContent = (currentLang==='en'?'Showing history for: ':'Mostrando historial de: ') + v.nickname;
+  card.style.display = 'block';
+  if (vHistory.length === 0) {
+    el.innerHTML = '<p style="color:var(--text2);">' + (currentLang==='en'?'No diagnostic history for this vehicle yet.':'No hay historial de diagnóstico para este vehículo todavía.') + '</p>';
+  } else {
+    el.innerHTML = vHistory.map(h => '<div class="history-item"><div><div class="code">' + h.code + '</div><div class="desc">' + h.desc + '</div><div class="desc">' + h.vehicle + '</div></div><div style="text-align:right;"><div class="date">' + h.date + '</div><div style="margin-top:6px;"><span class="status-dot ' + (h.resolved?'dot-resolved':'dot-open') + '"></span><span style="font-size:0.8rem;color:var(--text2);">' + (h.resolved?(currentLang==='en'?'Resolved':'Resuelto'):(currentLang==='en'?'Open':'Abierto')) + '</span></div><button class="btn btn-secondary" style="font-size:0.75rem;padding:4px 10px;margin-top:6px;" onclick="toggleResolved('+h.id+')">' + (h.resolved?(currentLang==='en'?'Reopen':'Reabrir'):(currentLang==='en'?'Mark Fixed':'Marcar Resuelto')) + '</button></div></div>').join('');
+  }
+  card.scrollIntoView({behavior:'smooth'});
+}
+
+function toggleResolved(id) {
+  const entry = history.find(h => h.id === id);
+  if (entry) {
+    entry.resolved = !entry.resolved;
+    localStorage.setItem('autofix_history', JSON.stringify(history));
+    document.querySelectorAll('.vehicle-card').forEach(c => {});
+    // Refresh whichever vehicle's history is visible
+    const idMatch = history.find(h => h.id === id);
+    if (idMatch) showVehicleHistory(idMatch.vehicleId);
+  }
+}
+
+function deleteVehicle(id) {
+  if (!confirm(currentLang==='en'?'Delete this vehicle from your garage?':'¿Eliminar este vehículo de tu garaje?')) return;
+  garage = garage.filter(v => v.id !== id);
+  localStorage.setItem('autofix_garage', JSON.stringify(garage));
+  renderGarage();
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded', function() {
+  initYearSelector();
+  renderGarage();
+});
+</script>
+
+<!-- Auth + subscription (Netlify Identity + Stripe) -->
+<script type="module">
+import {
+  login, signup, logout, getUser, onAuthChange,
+  handleAuthCallback, requestPasswordRecovery, AuthError, MissingIdentityError
+} from 'https://esm.sh/@netlify/identity@1.2.0';
+
+let authMode = 'login';
+let subState = { authenticated: false, active: false };
+
+const $ = (id) => document.getElementById(id);
+const isEs = () => {
+  const active = document.querySelector('.lang-btn.active');
+  return !!active && (active.getAttribute('onclick') || '').includes("'es'");
+};
+const t = (en, es) => (isEs() ? es : en);
+
+function setMsg(text, kind) {
+  const el = $('auth-msg');
+  el.textContent = text || '';
+  el.className = 'auth-msg' + (kind ? ' ' + kind : '');
+}
+
+function updateAuthUI(user) {
+  const inEl = $('auth-logged-in'), outEl = $('auth-logged-out');
+  if (user) {
+    outEl.style.display = 'none';
+    inEl.style.display = 'flex';
+    $('auth-email').textContent = user.email || '';
+  } else {
+    inEl.style.display = 'none';
+    outEl.style.display = 'flex';
+    $('pro-badge').style.display = 'none';
+  }
+}
+
+async function refreshSubscription() {
+  try {
+    const res = await fetch('/api/subscription', { headers: { 'accept': 'application/json' } });
+    subState = await res.json();
+  } catch {
+    subState = { authenticated: false, active: false };
+  }
+  renderPricing();
+  regateActiveTab();
+}
+
+function renderPricing() {
+  const badge = $('pro-badge');
+  if (badge) badge.style.display = subState.active ? 'inline-flex' : 'none';
+
+  const btn = $('subscribe-btn');
+  const note = $('plan-note');
+  const previewLink = $('preview-link');
+  if (!btn) return;
+
+  // Preview/test mode: Pro is unlocked without a real Stripe subscription.
+  if (subState.preview) {
+    btn.textContent = t('Exit test mode', 'Salir del modo de prueba');
+    btn.disabled = false;
+    btn.onclick = window.exitPreview;
+    note.textContent = t('Test access is active — all Pro features are unlocked for preview.',
+      'Acceso de prueba activo — todas las funciones Pro están desbloqueadas.');
+    if (previewLink) previewLink.parentElement.style.display = 'none';
+    return;
+  }
+
+  btn.onclick = window.startSubscribe;
+  if (previewLink) previewLink.parentElement.style.display = '';
+
+  if (subState.active) {
+    btn.textContent = t('Manage subscription', 'Administrar suscripción');
+    btn.disabled = false;
+    note.textContent = t('You are an AutoFix Pro member. Manage or cancel anytime.',
+      'Eres miembro de AutoFix Pro. Administra o cancela cuando quieras.');
+  } else if (subState.authenticated) {
+    btn.textContent = t('Subscribe — $9.99/mo', 'Suscribirse — $9.99/mes');
+    btn.disabled = false;
+    note.textContent = t('Secure checkout powered by Stripe.', 'Pago seguro con Stripe.');
+  } else {
+    btn.textContent = t('Subscribe — $9.99/mo', 'Suscribirse — $9.99/mes');
+    btn.disabled = false;
+    note.textContent = t('Secure checkout powered by Stripe. Sign in required.',
+      'Pago seguro con Stripe. Requiere iniciar sesión.');
+  }
+}
+
+// ---- Access gate: VIN decoding is free & public; everything else is AutoFix Pro ----
+const GATED_TABS = {
+  dtc:     { en: 'OBD-II AI diagnostics', es: 'diagnósticos OBD-II con IA' },
+  recalls: { en: 'TSB & recall lookups',  es: 'búsquedas de TSB y recalls' },
+  garage:  { en: 'My Garage',             es: 'Mi Garaje' },
+};
+
+function hasProAccess() { return !!subState.active; }
+
+function renderGate(tabEl, name) {
+  let gate = tabEl.querySelector('.gate-screen');
+  if (!gate) {
+    gate = document.createElement('div');
+    gate.className = 'card gate-screen';
+    tabEl.insertBefore(gate, tabEl.firstChild);
+  }
+  const feature = t(GATED_TABS[name].en, GATED_TABS[name].es);
+  const signedIn = subState.authenticated;
+  let html = '<div class="gate-icon">🔒</div>';
+  html += '<h2>' + t('AutoFix Pro members only', 'Solo miembros de AutoFix Pro') + '</h2>';
+  if (signedIn) {
+    html += '<p>' + t('Your account is not subscribed yet. Unlock ' + feature + ' and all pro tools for $9.99/month.',
+                      'Tu cuenta aún no está suscrita. Desbloquea ' + feature + ' y todas las herramientas pro por $9.99/mes.') + '</p>';
+    html += '<div class="gate-actions"><button class="btn btn-primary" onclick="showTab(\'pricing\')">' +
+            t('Subscribe — $9.99/mo', 'Suscribirse — $9.99/mes') + '</button>' +
+            '<button class="btn btn-secondary" onclick="enterPreview()">' + t('Use a test password', 'Usar contraseña de prueba') + '</button></div>';
+  } else {
+    html += '<p>' + t('Sign in and subscribe to AutoFix Pro to use ' + feature + '. VIN decoding stays free for everyone.',
+                      'Inicia sesión y suscríbete a AutoFix Pro para usar ' + feature + '. La decodificación de VIN es gratis para todos.') + '</p>';
+    html += '<div class="gate-actions">' +
+            '<button class="btn btn-secondary" onclick="openAuth(\'login\')">' + t('Sign In', 'Iniciar Sesión') + '</button>' +
+            '<button class="btn btn-primary" onclick="showTab(\'pricing\')">' + t('See Pricing', 'Ver Precios') + '</button>' +
+            '<button class="btn btn-secondary" onclick="enterPreview()">' + t('Use a test password', 'Usar contraseña de prueba') + '</button>' +
+            '</div>';
+  }
+  gate.innerHTML = html;
+}
+
+window.applyGate = function(name) {
+  const tabEl = document.getElementById('tab-' + name);
+  if (!tabEl) return true;
+  if (!GATED_TABS[name]) { tabEl.classList.remove('locked'); return true; }
+  if (hasProAccess()) {
+    tabEl.classList.remove('locked');
+    const gate = tabEl.querySelector('.gate-screen');
+    if (gate) gate.remove();
+    return true;
+  }
+  tabEl.classList.add('locked');
+  renderGate(tabEl, name);
+  return false;
+};
+
+// Re-evaluate the gate on the tab the user is currently viewing.
+function regateActiveTab() {
+  const activeTab = document.querySelector('.tab-content.active');
+  if (activeTab) window.applyGate(activeTab.id.replace('tab-', ''));
+}
+
+// ---- Service checklist (part of AutoFix Pro) ----
+window.openChecklist = function() {
+  if (hasProAccess()) { window.location.href = '/checklist.html'; return; }
+  showTab('pricing');
+  setTimeout(() => alert(t('The Service Checklist is part of AutoFix Pro. Subscribe — or enter a test password — to use it.',
+    'La Lista de Servicio es parte de AutoFix Pro. Suscríbete — o ingresa una contraseña de prueba — para usarla.')), 60);
+};
+
+// ---- Preview / test access (unlock Pro for testing, no Stripe needed) ----
+window.enterPreview = async function() {
+  const password = prompt(t('Enter the test password to unlock AutoFix Pro for preview:',
+                            'Ingresa la contraseña de prueba para desbloquear AutoFix Pro:'));
+  if (password == null || password.trim() === '') return;
+  try {
+    const res = await fetch('/api/preview-access', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      await refreshSubscription();
+      alert(t('✅ Test access unlocked. All Pro features are available.',
+              '✅ Acceso de prueba desbloqueado. Todas las funciones Pro están disponibles.'));
+    } else {
+      alert(data.error || t('Could not unlock test access.', 'No se pudo desbloquear el acceso de prueba.'));
+    }
+  } catch {
+    alert(t('Network error. Please try again.', 'Error de red. Intenta de nuevo.'));
+  }
+};
+
+window.exitPreview = async function() {
+  try {
+    await fetch('/api/preview-access', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'exit' }),
+    });
+  } catch {}
+  await refreshSubscription();
+};
+
+// ---- Auth modal controls (exposed to inline onclick handlers) ----
+window.openAuth = function(mode) {
+  switchAuthMode(mode || 'login');
+  setMsg('');
+  $('auth-modal').classList.remove('hidden');
+};
+window.closeAuth = function() { $('auth-modal').classList.add('hidden'); };
+window.switchAuthMode = function(mode) {
+  authMode = mode;
+  const isSignup = mode === 'signup';
+  $('tab-btn-login').classList.toggle('active', !isSignup);
+  $('tab-btn-signup').classList.toggle('active', isSignup);
+  $('signup-name-row').style.display = isSignup ? 'block' : 'none';
+  $('auth-title').textContent = isSignup ? t('Register', 'Registrarse') : t('Sign In', 'Iniciar Sesión');
+  $('auth-submit').textContent = isSignup ? t('Create account', 'Crear cuenta') : t('Sign In', 'Iniciar Sesión');
+  $('auth-password').setAttribute('autocomplete', isSignup ? 'new-password' : 'current-password');
+  setMsg('');
+};
+const switchAuthMode = window.switchAuthMode;
+
+window.submitAuth = async function() {
+  const email = $('auth-email-input').value.trim();
+  const password = $('auth-password').value;
+  const name = $('auth-name').value.trim();
+  if (!email || !password) { setMsg(t('Enter your email and password.', 'Ingresa tu correo y contraseña.'), 'error'); return; }
+
+  const submit = $('auth-submit');
+  submit.disabled = true;
+  setMsg(t('Please wait…', 'Por favor espera…'));
+  try {
+    if (authMode === 'signup') {
+      const user = await signup(email, password, { full_name: name });
+      if (user.emailVerified) {
+        setMsg(t('Account created. You are signed in.', 'Cuenta creada. Sesión iniciada.'), 'success');
+        setTimeout(window.closeAuth, 900);
+      } else {
+        setMsg(t('Check your email to confirm your account.', 'Revisa tu correo para confirmar tu cuenta.'), 'success');
+      }
+    } else {
+      await login(email, password);
+      setMsg(t('Welcome back!', '¡Bienvenido de nuevo!'), 'success');
+      setTimeout(window.closeAuth, 600);
+    }
+  } catch (error) {
+    setMsg(authErrorMessage(error), 'error');
+  } finally {
+    submit.disabled = false;
+  }
+};
+
+window.doLogout = async function() {
+  try { await logout(); } catch {}
+};
+
+window.forgotPassword = async function() {
+  const email = $('auth-email-input').value.trim();
+  if (!email) { setMsg(t('Enter your email first.', 'Ingresa tu correo primero.'), 'error'); return; }
+  try {
+    await requestPasswordRecovery(email);
+    setMsg(t('Check your email for a reset link.', 'Revisa tu correo para el enlace de recuperación.'), 'success');
+  } catch (error) {
+    setMsg(authErrorMessage(error), 'error');
+  }
+};
+
+window.onPricingShown = refreshSubscription;
+
+window.startSubscribe = async function() {
+  const user = await getUser();
+  if (!user) { window.openAuth('signup'); return; }
+
+  const btn = $('subscribe-btn');
+  const action = subState.active ? '?action=portal' : '';
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = t('Redirecting…', 'Redirigiendo…');
+  try {
+    const token = (JSON.parse(localStorage.getItem('gotrue.user')||'{}')?.token?.access_token)||''; const res = await fetch('/api/checkout' + action, { method: 'POST', headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'} });
+    const data = await res.json();
+    if (res.ok && data.url) {
+      window.location.href = data.url;
+      return;
+    }
+    alert(data.error || t('Could not start checkout. Please try again.', 'No se pudo iniciar el pago. Intenta de nuevo.'));
+  } catch {
+    alert(t('Network error. Please try again.', 'Error de red. Intenta de nuevo.'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+};
+
+function authErrorMessage(error) {
+  if (error instanceof MissingIdentityError) {
+    return t('Sign-in is not available yet. Please try again shortly.',
+             'El inicio de sesión aún no está disponible. Intenta más tarde.');
+  }
+  if (error instanceof AuthError) {
+    switch (error.status) {
+      case 401: return t('Invalid email or password.', 'Correo o contraseña inválidos.');
+      case 403: return t('Registration is currently closed.', 'El registro está cerrado actualmente.');
+      case 422: return t('Check your email and use a stronger password.', 'Verifica tu correo y usa una contraseña más segura.');
+      case 404: return t('Account not found.', 'Cuenta no encontrada.');
+      default:  return error.message;
+    }
+  }
+  return t('Something went wrong. Please try again.', 'Algo salió mal. Intenta de nuevo.');
+}
+
+// ---- Boot ----
+(async function init() {
+  try { await handleAuthCallback(); } catch (e) { /* ignore callback errors on normal loads */ }
+
+  onAuthChange((event, user) => {
+    updateAuthUI(user);
+    refreshSubscription();
+  });
+
+  const user = await getUser();
+  updateAuthUI(user);
+  await refreshSubscription();
+
+  // Deep-link to the pricing tab (e.g. arriving from the Service Checklist gate).
+  if (window.location.hash === '#pricing') showTab('pricing');
+
+  // Surface the result of a returning Stripe Checkout redirect.
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('subscribed') === '1') {
+    setTimeout(() => alert(t('🎉 Welcome to AutoFix Pro! Your subscription is active.',
+                             '🎉 ¡Bienvenido a AutoFix Pro! Tu suscripción está activa.')), 300);
+    // Poll briefly in case the webhook is still landing.
+    setTimeout(refreshSubscription, 2500);
+  } else if (params.get('canceled') === '1') {
+    setTimeout(() => alert(t('Checkout canceled — no charge was made.',
+                             'Pago cancelado — no se realizó ningún cargo.')), 300);
+  }
+})();
+</script>
+</body>
+</html>
