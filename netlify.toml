@@ -3,7 +3,6 @@
 
 [functions]
   directory = "netlify/functions"
-  deno_bundler = "deno"
 
 [[redirects]]
   from = "/api/*"
