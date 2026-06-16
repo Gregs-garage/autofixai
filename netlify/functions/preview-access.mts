@@ -1,58 +1,28 @@
-// POST /api/preview-access
-// Grants or revokes preview (Pro test) access via a signed cookie.
-// Body: { password: string } to grant, { action: 'exit' } to revoke.
-
 import type { Config, Context } from '@netlify/functions'
-import {
-  previewConfigured,
-  verifyPassword,
-  grantCookie,
-} from '../lib/preview.mts'
+import { isActive, getByUserId } from '../lib/subscriptions.mts'
 
+// Grants temporary preview access to a subscriber. Requires signed-in user
+// and either an active subscription or the correct PRO_PREVIEW_PASSWORD env var.
 export default async (req: Request, context: Context) => {
-  if (!previewConfigured()) {
-    return Response.json(
-      { error: 'Preview access is not configured on this site.' },
-      { status: 404 },
-    )
+  const user = context.clientContext?.user
+  if (!user) return Response.json({ error: 'You must be signed in.' }, { status: 401 })
+
+  const sub = await getByUserId(user.sub)
+
+  // Allow access if subscription is active
+  if (isActive(sub)) {
+    return Response.json({ access: true, reason: 'subscription' })
   }
 
-  let body: { password?: string; action?: string } = {}
-  try {
-    body = await req.json()
-  } catch {
-    return Response.json({ error: 'Invalid JSON body.' }, { status: 400 })
+  // Allow access if PRO_PREVIEW_PASSWORD matches (for testing/preview purposes)
+  const body = await req.json().catch(() => ({}))
+  const password = body?.password
+  const previewPassword = process.env.PRO_PREVIEW_PASSWORD
+  if (previewPassword && password === previewPassword) {
+    return Response.json({ access: true, reason: 'preview_password' })
   }
 
-  // Exit / revoke preview access
-  if (body.action === 'exit') {
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: {
-        'content-type': 'application/json',
-        'set-cookie': 'pro_preview=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0',
-      },
-    })
-  }
-
-  // Grant preview access
-  if (!body.password) {
-    return Response.json({ error: 'password is required.' }, { status: 400 })
-  }
-
-  const ok = await verifyPassword(body.password)
-  if (!ok) {
-    return Response.json({ error: 'Incorrect password.' }, { status: 401 })
-  }
-
-  const cookie = await grantCookie()
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 200,
-    headers: {
-      'content-type': 'application/json',
-      'set-cookie': cookie,
-    },
-  })
+  return Response.json({ access: false }, { status: 403 })
 }
 
 export const config: Config = {
