@@ -1,12 +1,12 @@
 import type { Config, Context } from '@netlify/functions'
-import { getUser } from '@netlify/identity'
 import { getStripe, planLineItem } from '../lib/stripe.mts'
 import { getByUserId, upsertCustomer, isActive } from '../lib/subscriptions.mts'
 
 // Creates a Stripe Checkout session for AutoFix Pro, or a Billing Portal session
-// for an existing subscriber (?action=portal). Requires a signed-in user.
+// for an existing subscriber (?action=portal). Requires a signed-in Netlify Identity user.
 export default async (req: Request, context: Context) => {
-  const user = await getUser()
+  // Get user from Netlify Identity JWT (injected by Netlify when Authorization header is present)
+  const user = context.clientContext?.user
   if (!user) return Response.json({ error: 'You must be signed in.' }, { status: 401 })
 
   const stripe = getStripe()
@@ -21,15 +21,15 @@ export default async (req: Request, context: Context) => {
   const action = new URL(req.url).searchParams.get('action')
 
   // Reuse the stored Stripe customer, or create one on first checkout.
-  let sub = await getByUserId(user.id)
+  let sub = await getByUserId(user.sub)
   let customerId = sub?.stripe_customer_id ?? null
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: user.email ?? undefined,
-      metadata: { netlify_user_id: user.id },
+      metadata: { netlify_user_id: user.sub },
     })
     customerId = customer.id
-    await upsertCustomer(user.id, user.email ?? null, customerId)
+    await upsertCustomer(user.sub, user.email ?? null, customerId)
   }
 
   try {
@@ -57,8 +57,8 @@ export default async (req: Request, context: Context) => {
       allow_promotion_codes: true,
       success_url: `${origin}/?subscribed=1#pricing`,
       cancel_url: `${origin}/?canceled=1#pricing`,
-      metadata: { netlify_user_id: user.id },
-      subscription_data: { metadata: { netlify_user_id: user.id } },
+      metadata: { netlify_user_id: user.sub },
+      subscription_data: { metadata: { netlify_user_id: user.sub } },
     })
 
     return Response.json({ url: session.url })
