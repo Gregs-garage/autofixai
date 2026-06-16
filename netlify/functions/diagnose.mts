@@ -3,104 +3,93 @@
 // Requires an active AutoFix Pro subscription or valid preview cookie.
 
 import type { Config, Context } from '@netlify/functions'
-import { getUser } from '@netlify/identity'
 import { getByUserId, isActive } from '../lib/subscriptions.mts'
 import { previewConfigured } from '../lib/preview.mts'
 
 const OPENAI_API = 'https://api.openai.com/v1/chat/completions'
 
 export default async (req: Request, context: Context) => {
-  // Check Pro access (subscription or preview cookie)
-  const cookie = req.headers.get('cookie') ?? ''
-  const hasPreviewCookie = cookie.includes('pro_preview=')
+  // Check if user is signed in via Netlify Identity
+  const user = context.clientContext?.user
 
-  const user = await getUser()
-
-  let isPro = false
-  if (hasPreviewCookie && previewConfigured()) {
-    isPro = true
-  } else if (user) {
-    const sub = await getByUserId(user.id)
-    isPro = isActive(sub)
+  // If signed in, check subscription
+  if (user) {
+    const sub = await getByUserId(user.sub)
+    if (!isActive(sub)) {
+      // Not subscribed — check for preview mode
+      if (!previewConfigured()) {
+        return Response.json({ error: 'AutoFix Pro subscription required.' }, { status: 403 })
+      }
+    }
+  } else {
+    // Not signed in — allow only if preview mode is configured
+    if (!previewConfigured()) {
+      return Response.json({ error: 'You must be signed in with an active subscription.' }, { status: 401 })
+    }
   }
 
-  if (!isPro) {
+  const openaiKey = process.env.OPENAI_API_KEY
+  if (!openaiKey) {
     return Response.json(
-      { error: 'AutoFix Pro subscription required.' },
-      { status: 402 },
+      { error: 'AI diagnosis is not configured. Set OPENAI_API_KEY in your Netlify site settings.' },
+      { status: 503 },
     )
   }
 
-  let body: { code?: string; vehicle?: Record<string, unknown> } = {}
+  let body: any
   try {
     body = await req.json()
   } catch {
     return Response.json({ error: 'Invalid JSON body.' }, { status: 400 })
   }
 
-  const { code, vehicle } = body
-  if (!code) {
-    return Response.json({ error: 'code is required.' }, { status: 400 })
-  }
+  const { dtc, make, model, year, mileage, symptoms } = body ?? {}
+  if (!dtc) return Response.json({ error: 'dtc is required.' }, { status: 400 })
 
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
-    return Response.json(
-      { error: 'AI service is not configured. Set OPENAI_API_KEY in Netlify env vars.' },
-      { status: 503 },
-    )
-  }
+  const vehicleInfo = [
+    year && make && model ? `${year} ${make} ${model}` : null,
+    mileage ? `${mileage} miles` : null,
+  ]
+    .filter(Boolean)
+    .join(', ')
 
-  const vehicleDesc = vehicle
-    ? `${vehicle.year ?? ''} ${vehicle.make ?? ''} ${vehicle.model ?? ''} ${vehicle.engine ?? ''}`.trim()
-    : 'unknown vehicle'
+  const symptomText = symptoms ? `Additional symptoms reported: ${symptoms}` : ''
 
-  const systemPrompt = `You are AutoFix AI, an expert automotive diagnostic assistant.
-When given an OBD-II diagnostic trouble code (DTC) and vehicle information, provide:
-1. What the code means in plain English
-2. Common causes (list the most likely causes first)
-3. Symptoms the driver may notice
-4. Recommended repair steps
-5. Estimated repair cost range (USD)
-6. Urgency level: Low / Medium / High / Critical
-Keep your response clear and practical for a vehicle owner or mechanic.`
-
-  const userPrompt = `Vehicle: ${vehicleDesc}
-DTC Code: ${code}
-
-Please diagnose this fault code.`
+  const prompt = [
+    `You are an expert automotive technician. Diagnose the following OBD-II fault code.`,
+    vehicleInfo ? `Vehicle: ${vehicleInfo}` : '',
+    `Fault code: ${dtc}`,
+    symptomText,
+    `Provide: 1) What the code means, 2) Likely causes (most to least common), 3) Recommended repairs, 4) Urgency level (safe to drive / drive with caution / do not drive). Be concise and practical.`,
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   try {
     const aiRes = await fetch(OPENAI_API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        max_tokens: 800,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 600,
         temperature: 0.3,
       }),
     })
 
     if (!aiRes.ok) {
       const err = await aiRes.text()
-      return Response.json({ error: 'AI request failed: ' + err }, { status: 502 })
+      return Response.json({ error: `OpenAI error: ${err}` }, { status: 502 })
     }
 
-    const data = (await aiRes.json()) as {
-      choices: Array<{ message: { content: string } }>
-    }
-    const diagnosis = data.choices?.[0]?.message?.content ?? ''
-
-    return Response.json({ diagnosis, code, vehicle: vehicleDesc }, { status: 200 })
+    const aiJson = await aiRes.json()
+    const diagnosis = aiJson.choices?.[0]?.message?.content ?? ''
+    return Response.json({ diagnosis, dtc })
   } catch (err: any) {
-    return Response.json({ error: err.message ?? 'AI request failed.' }, { status: 502 })
+    return Response.json({ error: err?.message || 'AI request failed.' }, { status: 502 })
   }
 }
 
