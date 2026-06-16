@@ -1,1 +1,27 @@
-{"id":"/netlify/lib/stripe.mts","path":"/netlify/lib/stripe.mts","sha":"50e6c28250090bd390b02922f246884aea3a967a","mime_type":"model/vnd.mts","size":1146,"site_id":"063f218e-65b4-4df0-a279-8a39341721ae","deploy_id":"6a29dde2165637cd21ace7f3"}
+// Stripe client singleton and shared line-item helper.
+// Import this from any Netlify function that needs to talk to Stripe.
+
+import Stripe from 'stripe'
+
+let _stripe: Stripe | null = null
+
+/**
+ * Returns an initialised Stripe client, or null if STRIPE_SECRET_KEY is not set.
+ */
+export function getStripe(): Stripe | null {
+  if (_stripe) return _stripe
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) return null
+  _stripe = new Stripe(key, { apiVersion: '2024-06-20' })
+  return _stripe
+}
+
+/**
+ * The line-item for AutoFix Pro, driven by the STRIPE_PRICE_ID env var.
+ * Throws if the env var is missing so misconfiguration is caught early.
+ */
+export function planLineItem(): Stripe.Checkout.SessionCreateParams.LineItem {
+  const priceId = process.env.STRIPE_PRICE_ID
+  if (!priceId) throw new Error('STRIPE_PRICE_ID env var is not set.')
+  return { price: priceId, quantity: 1 }
+}
