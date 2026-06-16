@@ -3,7 +3,7 @@
 
 [functions]
   directory = "netlify/functions"
-  node_bundler = "esbuild"
+  deno_bundler = "deno"
 
 [[redirects]]
   from = "/api/*"
