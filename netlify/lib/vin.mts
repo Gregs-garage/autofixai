@@ -1,0 +1,1 @@
+{"id":"/netlify/functions/vin.mts","path":"/netlify/functions/vin.mts","sha":"e1c693a676ade003ff6ee89b0d1cd4996fe586fc","mime_type":"model/vnd.mts","size":1895,"site_id":"063f218e-65b4-4df0-a279-8a39341721ae","deploy_id":"6a29dde2165637cd21ace7f3"}
