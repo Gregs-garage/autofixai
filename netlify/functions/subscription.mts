@@ -1,43 +1,24 @@
-// GET /api/subscription
-// Returns the current user's subscription status.
-// Used by the frontend to decide whether to show Pro features.
-
 import type { Config, Context } from '@netlify/functions'
-import { getUser } from '@netlify/identity'
-import { getByUserId, isActive } from '../lib/subscriptions.mts'
-import { previewConfigured } from '../lib/preview.mts'
+import { getByUserId } from '../lib/subscriptions.mts'
+import { isActive } from '../lib/subscriptions.mts'
 
+// Returns the current user's subscription status.
+// Requires a signed-in Netlify Identity user (JWT in Authorization header).
 export default async (req: Request, context: Context) => {
-  // Allow preview cookie to act as a Pro pass
-  const cookie = req.headers.get('cookie') ?? ''
-  const hasPreviewCookie = cookie.includes('pro_preview=')
+  const user = context.clientContext?.user
+  if (!user) return Response.json({ error: 'You must be signed in.' }, { status: 401 })
 
-  const user = await getUser()
+  const sub = await getByUserId(user.sub)
+  const active = isActive(sub)
 
-  if (!user && !hasPreviewCookie) {
-    return Response.json({ active: false, preview: false }, { status: 200 })
-  }
-
-  if (hasPreviewCookie && previewConfigured()) {
-    return Response.json({ active: true, preview: true }, { status: 200 })
-  }
-
-  if (!user) {
-    return Response.json({ active: false, preview: false }, { status: 200 })
-  }
-
-  const sub = await getByUserId(user.id)
-
-  return Response.json(
-    {
-      active: isActive(sub),
-      preview: false,
-      status: sub?.status ?? null,
-      shop_name: sub?.shop_name ?? null,
-      current_period_end: sub?.current_period_end ?? null,
-    },
-    { status: 200 },
-  )
+  return Response.json({
+    subscribed: active,
+    plan: active ? 'pro' : 'free',
+    stripe_customer_id: sub?.stripe_customer_id ?? null,
+    stripe_subscription_id: sub?.stripe_subscription_id ?? null,
+    stripe_status: sub?.stripe_status ?? null,
+    period_end: sub?.current_period_end ?? null,
+  })
 }
 
 export const config: Config = {
