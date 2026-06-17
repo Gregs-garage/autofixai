@@ -1,0 +1,10 @@
+{
+  "name": "autofixai",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "stripe": "^17.0.0",
+    "@netlify/blobs": "^8.0.0",
+    "@netlify/functions": "^2.8.0"
+  }
+}
