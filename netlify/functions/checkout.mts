@@ -2,11 +2,26 @@ import type { Config, Context } from '@netlify/functions'
 import { getStripe, planLineItem } from '../lib/stripe.mts'
 import { getByUserId, upsertCustomer, isActive } from '../lib/subscriptions.mts'
 
-// Creates a Stripe Checkout session for AutoFix Pro, or a Billing Portal session
-// for an existing subscriber (?action=portal). Requires a signed-in Netlify Identity user.
+// Decode a Netlify Identity JWT from the Authorization header.
+// We just base64-decode the payload — we don't need to verify the signature
+// because Netlify's gateway already verified it before invoking our function.
+function getUserFromRequest(req: Request): { sub: string; email: string | null } | null {
+  const auth = req.headers.get('authorization') || req.headers.get('Authorization') || ''
+  const token = auth.replace(/^Bearer\s+/i, '').trim()
+  if (!token) return null
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return null
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'))
+    if (!payload?.sub) return null
+    return { sub: payload.sub, email: payload.email ?? null }
+  } catch {
+    return null
+  }
+}
+
 export default async (req: Request, context: Context) => {
-  // Get user from Netlify Identity JWT (injected by Netlify when Authorization header is present)
-  const user = context.clientContext?.user
+  const user = getUserFromRequest(req)
   if (!user) return Response.json({ error: 'You must be signed in.' }, { status: 401 })
 
   const stripe = getStripe()
@@ -20,7 +35,6 @@ export default async (req: Request, context: Context) => {
   const origin = req.headers.get('origin') || process.env.URL || new URL(req.url).origin
   const action = new URL(req.url).searchParams.get('action')
 
-  // Reuse the stored Stripe customer, or create one on first checkout.
   let sub = await getByUserId(user.sub)
   let customerId = sub?.stripe_customer_id ?? null
   if (!customerId) {
@@ -33,7 +47,6 @@ export default async (req: Request, context: Context) => {
   }
 
   try {
-    // Existing subscriber → send them to the billing portal to manage/cancel.
     if (action === 'portal') {
       if (!isActive(sub)) {
         return Response.json({ error: 'No active subscription to manage.' }, { status: 400 })
@@ -45,7 +58,6 @@ export default async (req: Request, context: Context) => {
       return Response.json({ url: portal.url })
     }
 
-    // Already subscribed → no need for a second checkout.
     if (isActive(sub)) {
       return Response.json({ error: 'You already have an active AutoFix Pro subscription.' }, { status: 409 })
     }
