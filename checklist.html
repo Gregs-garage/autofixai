@@ -387,10 +387,29 @@ function renderChecklist() {
       const row = document.createElement('div');
       row.className = 'checklist-item';
       row.id = 'row_' + id;
-      row.innerHTML = '<input type="checkbox" id="cb_' + id + '" onchange="toggleItem('' + id + '', '' + section.id + '')">' +
-        '<div class="item-label"><div class="item-name" id="name_' + id + '">' + item.name + '</div>' +
-        '<div class="item-note">' + item.note + '</div></div>' +
-        '<div class="item-labour">' + item.labour.toFixed(1) + ' hr</div>';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = 'cb_' + id;
+      (function(capturedId, capturedSectionId) {
+        cb.addEventListener('change', function() { toggleItem(capturedId, capturedSectionId); });
+      })(id, section.id);
+      var labelDiv = document.createElement('div');
+      labelDiv.className = 'item-label';
+      var nameDiv = document.createElement('div');
+      nameDiv.className = 'item-name';
+      nameDiv.id = 'name_' + id;
+      nameDiv.textContent = item.name;
+      var noteDiv = document.createElement('div');
+      noteDiv.className = 'item-note';
+      noteDiv.textContent = item.note;
+      labelDiv.appendChild(nameDiv);
+      labelDiv.appendChild(noteDiv);
+      var labourDiv = document.createElement('div');
+      labourDiv.className = 'item-labour';
+      labourDiv.textContent = item.labour.toFixed(1) + ' hr';
+      row.appendChild(cb);
+      row.appendChild(labelDiv);
+      row.appendChild(labourDiv);
       itemsEl.appendChild(row);
     });
     sectionEl.appendChild(header);
