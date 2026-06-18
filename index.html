@@ -1006,7 +1006,7 @@ const GATED_TABS = {
   garage:  { en: 'My Garage',             es: 'Mi Garaje' },
 };
 
-function hasProAccess() { return !!subState.active; }
+function hasProAccess() { return !!(subState.active || subState.subscribed); }
 
 function renderGate(tabEl, name) {
   let gate = tabEl.querySelector('.gate-screen');
