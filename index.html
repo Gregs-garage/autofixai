@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AutoFix AI - Vehicle Diagnostic Platform</title>
+<title>AutoFix AI - Vehicle Diagnostic Platformh</title>
 <style>
 :root {
   --primary: #e63946;
@@ -950,7 +950,7 @@ function updateAuthUI(user) {
 
 async function refreshSubscription() {
   try {
-    const res = await fetch('/api/subscription', { headers: { 'accept': 'application/json' } });
+    const res = await fetch('/api/subscription', { headers: { 'accept': 'application/json', 'Authorization': 'Bearer ' + (JSON.parse(localStorage.getItem('gotrue.user') || '{}')).token?.access_token } });
     subState = await res.json();
   } catch {
     subState = { authenticated: false, active: false };
