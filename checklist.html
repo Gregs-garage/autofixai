@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Checklist — AutoFix AI</title>
+<style>
+:root {
+  --primary: #e63946;
+  --primary-dark: #c1121f;
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #21262d;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --accent: #58a6ff;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+header { background: linear-gradient(135deg, #0d1117 0%, #1a0505 100%); border-bottom: 2px solid var(--primary); padding: 0 20px; position: sticky; top: 0; z-index: 100; }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.logo-icon { width: 44px; height: 44px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.logo h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.logo span { color: var(--primary); }
+.back-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+.back-btn:hover { border-color: var(--accent); color: var(--accent); }
+main { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.card h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+input, select, textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 12px 16px; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+input::placeholder { color: var(--text2); }
+.btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.input-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.input-row input, .input-row select { flex: 1; min-width: 160px; }
+.error-msg { background: rgba(248,81,73,0.15); border: 1px solid var(--danger); color: var(--danger); padding: 12px 16px; border-radius: 8px; margin-top: 12px; }
+.success-msg { background: rgba(63,185,80,0.15); border: 1px solid var(--success); color: var(--success); padding: 12px 16px; border-radius: 8px; margin-top: 12px; }
+.loading { color: var(--text2); font-style: italic; padding: 20px; text-align: center; }
+.pro-tag { display: inline-block; background: linear-gradient(135deg,#d29922,#e63946); color: #fff; font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px; vertical-align: middle; }
+/* Checklist styles */
+.checklist-meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.meta-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.meta-box .lbl { font-size: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.meta-box .val { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 2px; cursor: pointer; user-select: none; }
+.section-header h3 { font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+.section-header .count { font-size: 0.8rem; color: var(--text2); }
+.section-header .toggle-icon { color: var(--text2); transition: transform 0.2s; }
+.section-header.open .toggle-icon { transform: rotate(90deg); }
+.checklist-section { margin-bottom: 12px; }
+.checklist-items { display: none; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; background: var(--bg2); }
+.checklist-items.open { display: block; }
+.checklist-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.checklist-item:last-child { border-bottom: none; }
+.checklist-item:hover { background: var(--bg3); }
+.checklist-item.done { opacity: 0.6; }
+.checklist-item input[type="checkbox"] { width: 18px; height: 18px; min-width: 18px; margin-top: 2px; accent-color: var(--success); cursor: pointer; }
+.item-label { flex: 1; }
+.item-label .item-name { font-size: 0.92rem; font-weight: 500; color: var(--text); }
+.item-label .item-name.strikethrough { text-decoration: line-through; color: var(--text2); }
+.item-label .item-note { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
+.item-labour { font-size: 0.85rem; color: var(--accent); white-space: nowrap; padding-top: 2px; }
+.progress-bar-wrap { height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+.progress-bar-fill { height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s; }
+.progress-label { font-size: 0.82rem; color: var(--text2); }
+.action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.hidden { display: none !important; }
+footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 20px; text-align: center; color: var(--text2); font-size: 0.85rem; margin-top: 40px; }
+@media print {
+  header, .back-btn, .action-bar, .card:first-child { display: none !important; }
+  body { background: #fff; color: #000; }
+  .checklist-items { display: block !important; }
+  .card { border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a class="logo" href="/">
+      <div class="logo-icon">🔧</div>
+      <h1>Auto<span>Fix</span> AI</h1>
+    </a>
+    <a class="back-btn" href="/">← Back to Dashboard</a>
+  </div>
+</header>
+
+<main>
+  <!-- VIN / Vehicle Input -->
+  <div class="card" id="input-card">
+    <h2><span>📋</span> Service Checklist Generator <span class="pro-tag">PRO</span></h2>
+    <p style="color:var(--text2);margin-bottom:16px;font-size:0.9rem;">Enter a VIN or select your vehicle to generate a full service checklist. Tick off jobs, track labour time, and print a job sheet.</p>
+    <div class="input-row">
+      <input type="text" id="vin-input" maxlength="17" placeholder="Enter 17-digit VIN for best results..." style="text-transform:uppercase;font-family:monospace;letter-spacing:2px;font-size:1rem;">
+      <button class="btn btn-primary" onclick="generateFromVIN()">🔍 Generate from VIN</button>
+    </div>
+    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:12px;">— or enter manually —</p>
+    <div class="input-row">
+      <input type="text" id="m-year" placeholder="Year (e.g. 2018)" maxlength="4" style="max-width:120px;">
+      <input type="text" id="m-make" placeholder="Make (e.g. Toyota)">
+      <input type="text" id="m-model" placeholder="Model (e.g. Camry)">
+      <input type="text" id="m-engine" placeholder="Engine (e.g. 2.5L 4cyl)">
+      <input type="text" id="m-mileage" placeholder="Current mileage (miles)">
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="generateManual()">📋 Generate Checklist</button>
+      <button class="btn btn-secondary" onclick="clearAll()">🗑 Clear</button>
+    </div>
+    <div id="input-msg"></div>
+  </div>
+
+  <!-- Auth gate -->
+  <div id="gate-card" class="card hidden" style="text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:12px;">🔒</div>
+    <h2 style="justify-content:center;">Pro Feature</h2>
+    <p style="color:var(--text2);max-width:460px;margin:8px auto 20px;">Service Checklist is part of AutoFix Pro. Sign in and subscribe to unlock this feature.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <a href="/" class="btn btn-primary">Go to Pricing</a>
+      <a href="/" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Checklist Output -->
+  <div id="checklist-output" class="hidden">
+    <!-- Vehicle summary -->
+    <div class="card" id="vehicle-summary"></div>
+    <!-- Progress -->
+    <div class="card" id="progress-card">
+      <h2><span>📊</span> Progress</h2>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">0 of 0 tasks complete · 0.0 hrs estimated</div>
+      <div class="action-bar">
+        <button class="btn btn-secondary" onclick="expandAll()">Expand All</button>
+        <button class="btn btn-secondary" onclick="collapseAll()">Collapse All</button>
+        <button class="btn btn-secondary" onclick="uncheckAll()">Uncheck All</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨 Print Job Sheet</button>
+        <button class="btn btn-secondary" onclick="newChecklist()">+ New Checklist</button>
+      </div>
+    </div>
+    <!-- Sections -->
+    <div id="checklist-sections"></div>
+  </div>
+</main>
+
+<footer>
+  <p>AutoFix AI — Service Checklist Generator · Pro Feature · Data for reference only, always consult a certified technician</p>
+</footer>
+
+<script>
+// ---- Auth gate ----
+(function checkAuth() {
+  try {
+    const raw = localStorage.getItem('gotrue.user');
+    if (!raw) { showGate(); return; }
+    const user = JSON.parse(raw);
+    const token = user?.token?.access_token;
+    if (!token) { showGate(); return; }
+    // Check subscription
+    fetch('/api/subscription', {
+      headers: {
+        'accept': 'application/json',
+        'Authorization': 'Bearer ' + token
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (!(data.active || data.subscribed || data.preview)) {
+        showGate();
+      }
+    })
+    .catch(() => {
+      // If API unreachable, allow access if user is logged in (fail open)
+    });
+  } catch(e) {
+    showGate();
+  }
+})();
+
+function showGate() {
+  document.getElementById('input-card').classList.add('hidden');
+  document.getElementById('gate-card').classList.remove('hidden');
+}
+
+// ---- Checklist data ----
+const CHECKLIST_SECTIONS = [
+  {
+    id: 'fluids', icon: '💧', name: 'Fluids & Filters',
+    items: [
+      { name: 'Engine Oil & Filter', note: 'Check level, colour and change interval', labour: 0.5 },
+      { name: 'Coolant / Antifreeze Level', note: 'Check reservoir and radiator cap condition', labour: 0.2 },
+      { name: 'Brake Fluid Level & Condition', note: 'Check DOT rating, moisture content and reservoir level', labour: 0.2 },
+      { name: 'Power Steering Fluid', note: 'Check level and condition (if hydraulic)', labour: 0.1 },
+      { name: 'Transmission Fluid', note: 'Check level, colour and smell (auto & manual)', labour: 0.3 },
+      { name: 'Differential / Transfer Case Fluid', note: 'Check for leaks and correct level (4WD/AWD)', labour: 0.3 },
+      { name: 'Windshield Washer Fluid', note: 'Refill as needed', labour: 0.1 },
+      { name: 'Air Filter (Engine)', note: 'Inspect element; replace if dirty or due by interval', labour: 0.3 },
+      { name: 'Cabin Air Filter', note: 'Inspect and replace if blocked or odorous', labour: 0.3 },
+      { name: 'Fuel Filter', note: 'Check service interval; replace if due', labour: 0.5 },
+    ]
+  },
+  {
+    id: 'brakes', icon: '🛑', name: 'Brakes',
+    items: [
+      { name: 'Front Brake Pads', note: 'Measure thickness — minimum 3mm; check for uneven wear', labour: 0.5 },
+      { name: 'Rear Brake Pads / Shoes', note: 'Measure thickness — minimum 2mm (drum shoes: 1.5mm)', labour: 0.5 },
+      { name: 'Front Brake Rotors / Drums', note: 'Measure thickness and check for scoring or cracks', labour: 0.3 },
+      { name: 'Rear Brake Rotors / Drums', note: 'Measure thickness and check for scoring or heat cracks', labour: 0.3 },
+      { name: 'Brake Callipers', note: 'Inspect for leaks, binding or seized guide pins', labour: 0.4 },
+      { name: 'Brake Lines & Hoses', note: 'Inspect for cracks, corrosion or swelling', labour: 0.3 },
+      { name: 'Parking / Emergency Brake', note: 'Test hold on incline; adjust cable tension if needed', labour: 0.3 },
+      { name: 'ABS / Brake Warning Light', note: 'Verify no active fault codes', labour: 0.2 },
+    ]
+  },
+  {
+    id: 'tyres', icon: '🔵', name: 'Tyres & Wheels',
+    items: [
+      { name: 'Tyre Tread Depth (all four)', note: 'Minimum legal 1.6mm — replace at or before 2mm', labour: 0.3 },
+      { name: 'Tyre Pressure (all four + spare)', note: 'Inflate to door placard spec when cold', labour: 0.2 },
+      { name: 'Tyre Condition & Sidewalls', note: 'Check for bulges, cuts, cracking or embedded objects', labour: 0.3 },
+      { name: 'Wheel Torque', note: 'Torque lug nuts to manufacturer spec after any wheel removal', labour: 0.3 },
+      { name: 'Tyre Rotation', note: 'Rotate every 5,000–7,500 miles or per schedule', labour: 0.5 },
+      { name: 'Wheel Alignment Check', note: 'Check for uneven tyre wear patterns; align if needed', labour: 0.5 },
+      { name: 'Wheel Balance', note: 'Balance all four if vibration present', labour: 0.8 },
+      { name: 'TPMS Sensors', note: 'Verify TPMS light is off; re-learn after rotation if needed', labour: 0.2 },
+    ]
+  },
+  {
+    id: 'engine', icon: '⚙️', name: 'Engine & Drivetrain',
+    items: [
+      { name: 'Spark Plugs', note: 'Inspect gap and electrode wear; replace per interval', labour: 1.0 },
+      { name: 'Ignition Wires / Coil Boots', note: 'Check insulation and connections (if applicable)', labour: 0.4 },
+      { name: 'Drive Belts (Serpentine / Alternator)', note: 'Check for cracks, glazing or fraying', labour: 0.4 },
+      { name: 'Timing Belt / Chain', note: 'Check service interval; replace belt if due (critical)', labour: 3.0 },
+      { name: 'PCV Valve & Hoses', note: 'Check for blockage or deterioration', labour: 0.3 },
+      { name: 'Throttle Body & Idle Air Control', note: 'Inspect for carbon build-up; clean if needed', labour: 0.5 },
+      { name: 'Engine Mounts', note: 'Check for excessive movement, cracks or fluid leaks', labour: 0.4 },
+      { name: 'Exhaust System', note: 'Inspect manifold, pipes, catalytic converter and muffler for leaks', labour: 0.5 },
+      { name: 'Check Engine / Malfunction Indicator Light', note: 'Scan for stored and pending fault codes', labour: 0.5 },
+    ]
+  },
+  {
+    id: 'cooling', icon: '🌡️', name: 'Cooling & Heating',
+    items: [
+      { name: 'Coolant Condition & Freeze Point', note: 'Test with refractometer; flush if degraded or due', labour: 0.3 },
+      { name: 'Radiator & Hoses', note: 'Check for leaks, soft spots, swelling or hardening', labour: 0.4 },
+      { name: 'Thermostat Operation', note: 'Verify engine reaches and holds correct operating temp', labour: 0.4 },
+      { name: 'Water Pump', note: 'Inspect for leaks at weep hole and bearing play', labour: 0.5 },
+      { name: 'Heater Core Function', note: 'Check heat output at full temp and verify no leaks inside cabin', labour: 0.3 },
+      { name: 'A/C Refrigerant Level & Operation', note: 'Check cooling output; check for leaks if undercharged', labour: 0.5 },
+    ]
+  },
+  {
+    id: 'suspension', icon: '🔩', name: 'Suspension & Steering',
+    items: [
+      { name: 'Shock Absorbers / Struts', note: 'Check for leaks, bounce test, and visual damage', labour: 0.5 },
+      { name: 'Ball Joints (upper & lower)', note: 'Check for play and torn boots', labour: 0.5 },
+      { name: 'Tie Rod Ends (inner & outer)', note: 'Check for looseness and torn boots', labour: 0.4 },
+      { name: 'Control Arm Bushings', note: 'Inspect for cracking, deterioration or excessive play', labour: 0.4 },
+      { name: 'Sway Bar & End Links', note: 'Check for worn bushings and loose fasteners', labour: 0.3 },
+      { name: 'Steering Rack / Gearbox', note: 'Check for leaks and excess play on-centre', labour: 0.4 },
+      { name: 'CV Axles & Boots', note: 'Inspect boots for cracks or grease fling; check for clicking on turns', labour: 0.5 },
+      { name: 'Wheel Bearings', note: 'Check for grinding noise or play on lift', labour: 0.4 },
+    ]
+  },
+  {
+    id: 'electrical', icon: '⚡', name: 'Electrical & Lighting',
+    items: [
+      { name: 'Battery Voltage & CCA Test', note: 'Test under load; clean terminals and cable ends', labour: 0.3 },
+      { name: 'Alternator Output', note: 'Check charging voltage (13.5–14.8V at idle)', labour: 0.3 },
+      { name: 'Starter Operation', note: 'Note cranking speed and any unusual sounds', labour: 0.2 },
+      { name: 'Headlights (low & high beam)', note: 'Check alignment, brightness and lens condition', labour: 0.2 },
+      { name: 'Tail Lights, Brake Lights & Reverse Light', note: 'Verify all bulbs/LEDs are working', labour: 0.2 },
+      { name: 'Turn Signals & Hazard Flashers', note: 'Check all four corners and instrument cluster indicator', labour: 0.1 },
+      { name: 'Dash Warning Lights', note: 'Verify all self-test lamps come on at key-on and extinguish', labour: 0.2 },
+      { name: 'Horn', note: 'Test operation', labour: 0.1 },
+      { name: 'Windshield Wipers & Washers', note: 'Check blade condition and washer jet spray pattern', labour: 0.2 },
+    ]
+  },
+  {
+    id: 'body', icon: '🚗', name: 'Body, Interior & Safety',
+    items: [
+      { name: 'Seat Belts', note: 'Check latching, retraction and webbing condition', labour: 0.2 },
+      { name: 'Airbag / SRS Warning Light', note: 'Verify no active SRS codes', labour: 0.2 },
+      { name: 'Door Locks & Hinges', note: 'Test all doors; lubricate hinges and check latches', labour: 0.3 },
+      { name: 'Bonnet / Hood Latch & Safety Catch', note: 'Check primary and secondary latches', labour: 0.1 },
+      { name: 'Underbody for Rust & Corrosion', note: 'Inspect frame rails, floor pans and subframes', labour: 0.5 },
+      { name: 'Fuel Tank & Lines', note: 'Inspect for leaks, corrosion or loose fittings', labour: 0.4 },
+      { name: 'First Aid Kit & Emergency Equipment', note: 'Check kit, fire extinguisher and reflective triangles', labour: 0.1 },
+    ]
+  }
+];
+
+let vehicleInfo = null;
+let checkedItems = {};
+
+function generateFromVIN() {
+  const vin = document.getElementById('vin-input').value.trim().toUpperCase();
+  if (vin.length !== 17) {
+    showMsg('error', '⚠️ Please enter a valid 17-character VIN.');
+    return;
+  }
+  showMsg('loading', '🔄 Decoding VIN...');
+  fetch('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/' + vin + '?format=json')
+    .then(r => r.json())
+    .then(d => {
+      const v = d.Results[0];
+      if (!v || !v.Make) throw new Error('No data');
+      vehicleInfo = {
+        vin: vin,
+        year: v.ModelYear,
+        make: v.Make,
+        model: v.Model,
+        engine: (v.DisplacementL ? v.DisplacementL + 'L ' : '') + (v.EngineCylinders ? v.EngineCylinders + '-cyl' : ''),
+        trim: v.Trim,
+        mileage: document.getElementById('m-mileage').value.trim() || ''
+      };
+      clearMsg();
+      renderChecklist();
+    })
+    .catch(() => showMsg('error', '❌ Could not decode VIN. Check the number and try again.'));
+}
+
+function generateManual() {
+  const year = document.getElementById('m-year').value.trim();
+  const make = document.getElementById('m-make').value.trim();
+  const model = document.getElementById('m-model').value.trim();
+  if (!year || !make || !model) {
+    showMsg('error', '⚠️ Please enter at least Year, Make and Model.');
+    return;
+  }
+  vehicleInfo = {
+    vin: document.getElementById('vin-input').value.trim().toUpperCase() || '',
+    year, make, model,
+    engine: document.getElementById('m-engine').value.trim() || '',
+    mileage: document.getElementById('m-mileage').value.trim() || ''
+  };
+  clearMsg();
+  renderChecklist();
+}
+
+function renderChecklist() {
+  // Build vehicle summary
+  const vs = document.getElementById('vehicle-summary');
+  vs.innerHTML = '<h2><span>🚗</span> Vehicle</h2><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">' +
+    [
+      { l: 'Year', v: vehicleInfo.year },
+      { l: 'Make', v: vehicleInfo.make },
+      { l: 'Model', v: vehicleInfo.model },
+      { l: 'Engine', v: vehicleInfo.engine || 'N/A' },
+      { l: 'Mileage', v: vehicleInfo.mileage ? Number(vehicleInfo.mileage).toLocaleString() + ' mi' : 'N/A' },
+      { l: 'VIN', v: vehicleInfo.vin || 'N/A' },
+      { l: 'Date', v: new Date().toLocaleDateString() },
+    ].map(x => '<div class="meta-box"><div class="lbl">' + x.l + '</div><div class="val">' + x.v + '</div></div>').join('') +
+  '</div>';
+
+  // Build sections
+  checkedItems = {};
+  const container = document.getElementById('checklist-sections');
+  container.innerHTML = '';
+  CHECKLIST_SECTIONS.forEach(section => {
+    const sectionEl = document.createElement('div');
+    sectionEl.className = 'checklist-section';
+    const header = document.createElement('div');
+    header.className = 'section-header open';
+    header.innerHTML = '<h3>' + section.icon + ' ' + section.name + '</h3><div style="display:flex;align-items:center;gap:12px;"><span class="count" id="count-' + section.id + '">0 / ' + section.items.length + '</span><span class="toggle-icon">▶</span></div>';
+    header.onclick = function() {
+      this.classList.toggle('open');
+      const items = this.nextElementSibling;
+      items.classList.toggle('open');
+    };
+    const itemsEl = document.createElement('div');
+    itemsEl.className = 'checklist-items open';
+    section.items.forEach((item, idx) => {
+      const id = section.id + '_' + idx;
+      checkedItems[id] = false;
+      const row = document.createElement('div');
+      row.className = 'checklist-item';
+      row.id = 'row_' + id;
+      row.innerHTML = '<input type="checkbox" id="cb_' + id + '" onchange="toggleItem('' + id + '', '' + section.id + '')">' +
+        '<div class="item-label"><div class="item-name" id="name_' + id + '">' + item.name + '</div>' +
+        '<div class="item-note">' + item.note + '</div></div>' +
+        '<div class="item-labour">' + item.labour.toFixed(1) + ' hr</div>';
+      itemsEl.appendChild(row);
+    });
+    sectionEl.appendChild(header);
+    sectionEl.appendChild(itemsEl);
+    container.appendChild(sectionEl);
+  });
+
+  document.getElementById('checklist-output').classList.remove('hidden');
+  document.getElementById('input-card').style.display = 'none';
+  updateProgress();
+}
+
+function toggleItem(id, sectionId) {
+  const cb = document.getElementById('cb_' + id);
+  checkedItems[id] = cb.checked;
+  const nameEl = document.getElementById('name_' + id);
+  const row = document.getElementById('row_' + id);
+  if (cb.checked) {
+    nameEl.classList.add('strikethrough');
+    row.classList.add('done');
+  } else {
+    nameEl.classList.remove('strikethrough');
+    row.classList.remove('done');
+  }
+  updateProgress();
+  updateSectionCount(sectionId);
+}
+
+function updateSectionCount(sectionId) {
+  const section = CHECKLIST_SECTIONS.find(s => s.id === sectionId);
+  if (!section) return;
+  const done = section.items.filter((_, idx) => checkedItems[sectionId + '_' + idx]).length;
+  const el = document.getElementById('count-' + sectionId);
+  if (el) el.textContent = done + ' / ' + section.items.length;
+}
+
+function updateProgress() {
+  const allItems = Object.keys(checkedItems);
+  const done = allItems.filter(k => checkedItems[k]).length;
+  const pct = allItems.length ? Math.round(done / allItems.length * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  const totalLabour = CHECKLIST_SECTIONS.reduce((sum, sec) => {
+    return sum + sec.items.reduce((s2, item, idx) => s2 + (checkedItems[sec.id + '_' + idx] ? 0 : item.labour), 0);
+  }, 0);
+  document.getElementById('progress-label').textContent =
+    done + ' of ' + allItems.length + ' tasks complete · ' + totalLabour.toFixed(1) + ' hrs remaining';
+}
+
+function expandAll() {
+  document.querySelectorAll('.section-header').forEach(h => h.classList.add('open'));
+  document.querySelectorAll('.checklist-items').forEach(i => i.classList.add('open'));
+}
+function collapseAll() {
+  document.querySelectorAll('.section-header').forEach(h => h.classList.remove('open'));
+  document.querySelectorAll('.checklist-items').forEach(i => i.classList.remove('open'));
+}
+function uncheckAll() {
+  Object.keys(checkedItems).forEach(id => {
+    checkedItems[id] = false;
+    const cb = document.getElementById('cb_' + id);
+    if (cb) cb.checked = false;
+    const nameEl = document.getElementById('name_' + id);
+    if (nameEl) nameEl.classList.remove('strikethrough');
+    const row = document.getElementById('row_' + id);
+    if (row) row.classList.remove('done');
+  });
+  CHECKLIST_SECTIONS.forEach(s => updateSectionCount(s.id));
+  updateProgress();
+}
+function newChecklist() {
+  document.getElementById('checklist-output').classList.add('hidden');
+  document.getElementById('input-card').style.display = '';
+  document.getElementById('vin-input').value = '';
+  ['m-year','m-make','m-model','m-engine','m-mileage'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  vehicleInfo = null;
+}
+function clearAll() {
+  document.getElementById('vin-input').value = '';
+  ['m-year','m-make','m-model','m-engine','m-mileage'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  clearMsg();
+}
+function showMsg(type, text) {
+  const el = document.getElementById('input-msg');
+  el.innerHTML = '<div class="' + (type === 'error' ? 'error-msg' : type === 'loading' ? 'loading' : 'success-msg') + '">' + text + '</div>';
+}
+function clearMsg() {
+  document.getElementById('input-msg').innerHTML = '';
+}
+</script>
+</body>
+</html>
