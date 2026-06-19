@@ -643,9 +643,10 @@ async function lookupDTC() {
   document.getElementById('dtc-result').innerHTML = '<div class="loading">' + (currentLang==='en'?('🤖 Analyzing code with AI' + (vehName ? ' for your ' + vehName : '') + '...'):('🤖 Analizando código con IA' + (vehName ? ' para tu ' + vehName : '') + '...')) + '</div>';
 
   try {
+    const _diagToken = (JSON.parse(localStorage.getItem('gotrue.user') || '{}')).token?.access_token || '';
     const r = await fetch('/api/diagnose', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _diagToken },
       body: JSON.stringify({ code: raw, vehicle: vehiclePayload(), lang: currentLang })
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
