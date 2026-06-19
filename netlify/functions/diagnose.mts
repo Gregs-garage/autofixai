@@ -42,37 +42,83 @@ export default async (req: Request, context: Context) => {
     return Response.json({ error: 'Invalid JSON body.' }, { status: 400 })
   }
 
-  const { dtc, make, model, year, mileage, symptoms } = body ?? {}
-  if (!dtc) return Response.json({ error: 'dtc is required.' }, { status: 400 })
+  // Accept either 'code' (frontend field name) or 'dtc' for backwards compat
+  const code: string = (body?.code || body?.dtc || '').toUpperCase().trim()
+  if (!code) return Response.json({ error: 'code is required.' }, { status: 400 })
 
-  const vehicleInfo = [
-    year && make && model ? `${year} ${make} ${model}` : null,
-    mileage ? `${mileage} miles` : null,
-  ].filter(Boolean).join(', ')
+  const vehicle = body?.vehicle ?? null
+  const lang: string = body?.lang === 'es' ? 'es' : 'en'
 
-  const symptomText = symptoms ? `Additional symptoms: ${symptoms}` : ''
+  const vehicleInfo = vehicle
+    ? [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')
+    : null
 
-  const prompt = [
-    `You are an expert automotive technician. Diagnose the following OBD-II fault code.`,
-    vehicleInfo ? `Vehicle: ${vehicleInfo}` : '',
-    `Fault code: ${dtc}`,
-    symptomText,
-    `Provide: 1) What the code means, 2) Likely causes (most to least common), 3) Recommended repairs, 4) Urgency level (safe to drive / drive with caution / do not drive). Be concise and practical.`,
-  ].filter(Boolean).join('\n')
+  const engineInfo = vehicle?.engine || null
+  const langNote = lang === 'es' ? 'Respond entirely in Spanish.' : 'Respond in English.'
+
+  const prompt = `You are an expert automotive technician. A user needs help diagnosing OBD-II fault code ${code}${vehicleInfo ? ` on their ${vehicleInfo}${engineInfo ? ` (${engineInfo})` : ''}` : ''}.
+
+${langNote}
+
+Return ONLY a valid JSON object with exactly these fields (no markdown, no code fences, just raw JSON):
+{
+  "name": "short human-readable name for the code",
+  "system": "which vehicle system (e.g. Ignition, Fuel System, Emissions)",
+  "code_type": "Generic (SAE) or Manufacturer-specific",
+  "severity": "high | medium | low",
+  "severity_note": "one sentence on whether it is safe to drive",
+  "vehicle": "${vehicleInfo ?? ''}",
+  "vehicle_note": "any known issue specific to this make/model/engine for this code, or empty string",
+  "causes": ["cause 1", "cause 2", "cause 3"],
+  "tests": ["step 1 test", "step 2 test"],
+  "fixes": ["fix 1", "fix 2"],
+  "repair_estimate": "rough cost range and labour time estimate"
+}`
 
   try {
     const aiRes = await fetch(OPENAI_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiKey}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], max_tokens: 600, temperature: 0.3 }),
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 900,
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+      }),
     })
+
     if (!aiRes.ok) {
       const err = await aiRes.text()
       return Response.json({ error: `OpenAI error: ${err}` }, { status: 502 })
     }
+
     const aiJson = await aiRes.json()
-    const diagnosis = aiJson.choices?.[0]?.message?.content ?? ''
-    return Response.json({ diagnosis, dtc })
+    const raw = aiJson.choices?.[0]?.message?.content ?? '{}'
+
+    let parsed: any
+    try {
+      parsed = JSON.parse(raw)
+    } catch {
+      return Response.json({ error: 'AI returned invalid JSON.' }, { status: 502 })
+    }
+
+    // Ensure arrays are arrays even if AI skipped them
+    const safeArr = (v: any) => (Array.isArray(v) ? v : typeof v === 'string' ? [v] : [])
+
+    return Response.json({
+      name: parsed.name || code,
+      system: parsed.system || '',
+      code_type: parsed.code_type || '',
+      severity: parsed.severity || 'medium',
+      severity_note: parsed.severity_note || '',
+      vehicle: parsed.vehicle || vehicleInfo || '',
+      vehicle_note: parsed.vehicle_note || '',
+      causes: safeArr(parsed.causes),
+      tests: safeArr(parsed.tests),
+      fixes: safeArr(parsed.fixes),
+      repair_estimate: parsed.repair_estimate || '',
+    })
   } catch (err: any) {
     return Response.json({ error: err?.message || 'AI request failed.' }, { status: 502 })
   }
