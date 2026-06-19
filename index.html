@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AutoFix AI - Vehicle Diagnostic Platformh</title>
+<title>AutofixAI.com - Vehicle Diagnostic Platform</title>
 <style>
 :root {
   --primary: #e63946;
@@ -154,7 +154,7 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
   <div class="header-inner">
     <div class="logo">
       <div class="logo-icon">🔧</div>
-      <h1>Auto<span>Fix</span> AI</h1>
+      <h1>Auto<span>fix</span>AI.com</h1>
     </div>
     <div class="lang-toggle">
       <button class="lang-btn active" onclick="setLang('en')">EN</button>
@@ -381,7 +381,7 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
   </div>
 </div>
 <footer>
-  <p data-en="AutoFix AI &mdash; Free vehicle diagnostics powered by NHTSA &bull; Data for reference only, always consult a certified technician" data-es="AutoFix AI &mdash; Diagnósticos vehiculares gratuitos powered by NHTSA &bull; Datos de referencia únicamente, consulte siempre un técnico certificado">AutoFix AI &mdash; Free vehicle diagnostics powered by NHTSA &bull; Data for reference only, always consult a certified technician</p>
+  <p data-en="AutofixAI.com &mdash; Free vehicle diagnostics powered by NHTSA &bull; Data for reference only, always consult a certified technician" data-es="AutofixAI.com &mdash; Diagnósticos vehiculares gratuitos powered by NHTSA &bull; Datos de referencia únicamente, consulte siempre un técnico certificado">AutofixAI.com &mdash; Free vehicle diagnostics powered by NHTSA &bull; Data for reference only, always consult a certified technician</p>
 </footer>
 
 <script>
@@ -618,6 +618,13 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// A code is manufacturer-specific (its meaning differs by make) when its
+// second digit is 1 or 3 per SAE J2012; 0 and 2 are standardized/generic.
+function isManufacturerSpecific(raw) {
+  const d = (raw || '').charAt(1);
+  return d === '1' || d === '3';
+}
+
 function vehiclePayload() {
   if (!currentVehicle) return null;
   return {
@@ -676,9 +683,14 @@ function renderDTCResult(raw, data) {
   if (data.vehicle) {
     html += '<p style="color:var(--accent);font-size:0.85rem;margin-bottom:14px;">🚗 ' + (currentLang==='en'?'Tailored to':'Adaptado a') + ': ' + escapeHtml(data.vehicle) + '</p>';
   }
+  if (data.needs_vehicle) {
+    html += '<div class="error-msg" style="margin-bottom:14px;">⚠️ ' + (currentLang==='en'
+      ? 'This is a manufacturer-specific code, and the same code number means different things on different makes (e.g. Ford vs. Honda). Decode your VIN or select a vehicle from My Garage for an accurate, make-specific diagnosis.'
+      : 'Este es un código específico del fabricante, y el mismo número significa cosas distintas en marcas diferentes (ej. Ford vs. Honda). Decodifica tu VIN o selecciona un vehículo de Mi Garaje para un diagnóstico preciso y específico de la marca.') + '</div>';
+  }
   html += '<div class="result-grid">';
   html += '<div class="result-item"><label>' + (currentLang==='en'?'System':'Sistema') + '</label><span>' + escapeHtml(data.system || '') + '</span></div>';
-  html += '<div class="result-item"><label>' + (currentLang==='en'?'Code Type':'Tipo de Código') + '</label><span>' + escapeHtml(data.code_type || (raw.charAt(1)==='0'?(currentLang==='en'?'Generic (SAE)':'Genérico (SAE)'):(currentLang==='en'?'Manufacturer-specific':'Específico del Fabricante'))) + '</span></div>';
+  html += '<div class="result-item"><label>' + (currentLang==='en'?'Code Type':'Tipo de Código') + '</label><span>' + escapeHtml(data.code_type || (isManufacturerSpecific(raw)?(currentLang==='en'?'Manufacturer-specific':'Específico del Fabricante'):(currentLang==='en'?'Generic (SAE)':'Genérico (SAE)'))) + '</span></div>';
   html += '<div class="result-item" style="grid-column:1/-1"><label>' + (currentLang==='en'?'Severity / Drive Status':'Severidad / Estado para Manejar') + '</label><span><span class="severity-badge ' + sv[0] + '">' + sv[1] + '</span></span></div>';
   if (data.severity_note) {
     html += '<div class="result-item" style="grid-column:1/-1"><span style="font-weight:400;color:var(--text2);">' + escapeHtml(data.severity_note) + '</span></div>';
@@ -714,6 +726,11 @@ function renderDTCFallback(raw) {
   html += '<span style="font-size:1rem;color:var(--text)">' + escapeHtml(desc || (currentLang==='en'?'Code recognized':'Código reconocido')) + '</span>';
   html += '</div>';
   html += '<div class="result-grid"><div class="result-item"><label>' + (currentLang==='en'?'System':'Sistema') + '</label><span>' + (sysMap[prefix] || 'Unknown') + '</span></div></div>';
+  if (isManufacturerSpecific(raw)) {
+    html += '<div class="dtc-section"><p style="color:var(--text2);font-size:0.85rem;">⚠️ ' + (currentLang==='en'
+      ? 'This is a manufacturer-specific code. Its meaning varies by make (e.g. Ford vs. Honda), so offline reference data may not match your vehicle. Reconnect for an AI diagnosis decoded for your exact make.'
+      : 'Este es un código específico del fabricante. Su significado varía según la marca (ej. Ford vs. Honda), por lo que los datos de referencia sin conexión pueden no coincidir con tu vehículo. Reconéctate para un diagnóstico con IA decodificado para tu marca exacta.') + '</p></div>';
+  }
   if (details) {
     const causes = currentLang === 'en' ? details.causes_en : details.causes_es;
     const tests = currentLang === 'en' ? details.tests_en : details.tests_es;
