@@ -643,18 +643,20 @@ async function lookupDTC() {
   document.getElementById('dtc-result').innerHTML = '<div class="loading">' + (currentLang==='en'?('🤖 Analyzing code with AI' + (vehName ? ' for your ' + vehName : '') + '...'):('🤖 Analizando código con IA' + (vehName ? ' para tu ' + vehName : '') + '...')) + '</div>';
 
   try {
-    const _diagToken = (JSON.parse(localStorage.getItem('gotrue.user') || '{}')).token?.access_token || '';
+    const _diagToken = window._authToken || (JSON.parse(localStorage.getItem('gotrue.user') || '{}')).token?.access_token || '';
     const r = await fetch('/api/diagnose', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _diagToken },
       body: JSON.stringify({ code: raw, vehicle: vehiclePayload(), lang: currentLang })
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!r.ok) { let errMsg; try { const errBody = await r.clone().json(); errMsg = errBody.error || ('HTTP ' + r.status); } catch(_) { errMsg = 'HTTP ' + r.status; } if (r.status === 401) { document.getElementById('dtc-result').innerHTML = '<div class="error-msg">\u26d4 ' + (currentLang==="en" ? 'Please sign in to use AI Diagnosis.' : 'Por favor inicia sesi\u00f3n para usar el diagn\u00f3stico IA.') + '</div>'; return; } if (r.status === 403) { document.getElementById('dtc-result').innerHTML = '<div class="error-msg">\uD83D\uDD12 ' + (currentLang==="en" ? 'AutoFix Pro subscription required. <a href="#pricing" onclick="showTab(\"pricing\")">Subscribe now \u2192</a>' : 'Se requiere suscripci\u00f3n AutoFix Pro. <a href="#pricing" onclick="showTab(\u0027pricing\u0027)">Suscr\u00edbete \u2192</a>') + '</div>'; return; } throw new Error(errMsg); }
     const data = await r.json();
     renderDTCResult(raw, data);
     logDTCHistory(raw, data.name);
   } catch (e) {
-    renderDTCFallback(raw);
+            const errTxt = e && e.message ? e.message : 'Unknown error';
+          document.getElementById('dtc-result').innerHTML = '<div class="error-msg">&#9888;&#65039; ' + escapeHtml(errTxt) + '</div>';
+            renderDTCFallback(raw);
   }
 }
 
@@ -1216,12 +1218,12 @@ function authErrorMessage(error) {
   try { await handleAuthCallback(); } catch (e) { /* ignore callback errors on normal loads */ }
 
   onAuthChange((event, user) => {
-    updateAuthUI(user);
+    updateAuthUI(user);    window._authToken = user && user.token ? user.token.access_token : null;
     refreshSubscription();
   });
 
   const user = await getUser();
-  updateAuthUI(user);
+  updateAuthUI(user);    window._authToken = user && user.token ? user.token.access_token : null;
   await refreshSubscription();
 
   // Deep-link to the pricing tab (e.g. arriving from the Service Checklist gate).
