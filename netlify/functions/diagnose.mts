@@ -37,6 +37,18 @@ function getMfrGroup(make: string): string {
   return ''
 }
 
+/** Get OBD-II system description from code prefix letter */
+function getCodeSystem(code: string): string {
+  const prefix = (code || '').charAt(0).toUpperCase()
+  switch (prefix) {
+    case 'P': return 'Powertrain (engine, transmission, fuel, emissions)'
+    case 'B': return 'Body (BCM, airbags, comfort systems, lighting, windows, seats)'
+    case 'C': return 'Chassis (ABS, traction control, stability control, steering, suspension, brakes)'
+    case 'U': return 'Network/Communication (CAN bus, module communication, data link)'
+    default: return ''
+  }
+}
+
 export default async (req: Request, context: Context) => {
   const user = getUserFromRequest(req)
   if (!user) return Response.json({ error: 'You must be signed in.' }, { status: 401 })
@@ -95,32 +107,41 @@ export default async (req: Request, context: Context) => {
     ? `VIN: ${vinStr}. Use the VIN to confirm the exact platform, engine family, and model year when interpreting codes.`
     : ''
 
-  const mfrCodeNote = `CRITICAL INSTRUCTION: OBD-II codes whose second character is NOT '0' (e.g. P1xxx, P2xxx, P3xxx) and all B, C, U codes are often manufacturer-specific. When the vehicle make is known, ALWAYS interpret the code using that manufacturer's DTC definitions — not generic SAE definitions. You MUST provide a complete, meaningful diagnosis for every code entered. NEVER respond with "unknown code", "not recognized", "code not found", or any similar non-answer. Use your full knowledge of manufacturer service documentation, TSBs, and known issues. For example: P000B on a Jeep/Chrysler vehicle = "B Camshaft Position Slow Response Bank 1" (VVT system fault).`
+  const mfrCodeNote = `CRITICAL INSTRUCTIONS FOR CODE INTERPRETATION:
+1. OBD-II codes are categorised by their FIRST LETTER — this determines the vehicle SYSTEM:
+   - P = Powertrain (engine, transmission, fuel, emissions)
+   - B = Body (BCM, airbags, comfort, lighting, windows, seats)
+   - C = Chassis (ABS, traction control, stability control, steering, suspension, brakes, wheel speed sensors)
+   - U = Network/Communication (CAN bus, module communication)
+   NEVER confuse these categories. A C-code is ALWAYS a Chassis code, NEVER a Body code.
+2. Extended manufacturer codes with hyphens (e.g. C2100-16, U0100-00) are valid — the suffix after the hyphen is a manufacturer-specific failure type sub-code. Interpret the full code including the suffix.
+3. Manufacturer-specific code examples for Stellantis/Chrysler (FCA):
+   - C2100-16 on Jeep/Chrysler = Battery Voltage Low (Chassis — ABS/ESP/electronic brake system module detecting low battery supply voltage). Failure type -16 = signal circuit low voltage.
+   - C2100-04 = Battery Voltage High
+   - P000B = B Camshaft Position Slow Response Bank 1 (VVT)
+4. When the vehicle make is known, ALWAYS interpret codes using that manufacturer's DTC definitions.
+5. NEVER respond with "unknown code", "not recognized", "code not found", or "not applicable". You MUST provide a complete, meaningful diagnosis for EVERY code entered.`
 
   let prompt: string
 
   if (isMulti) {
     prompt = `You are a master automotive technician with comprehensive knowledge of OBD-II diagnostics, all manufacturer-specific DTC databases, and vehicle repair across all makes and models.
-
 A vehicle has multiple fault codes active simultaneously: ${codeList}${vehicleInfo ? ` on a ${vehicleInfo}${engineInfo ? ` (${engineInfo})` : ''}` : ''}.
 ${mfrContext ? '\n' + mfrContext : ''}
 ${vinContext ? vinContext + '\n' : ''}
 ${mfrCodeNote}
-
 ${langNote}
-
-Analyse these codes TOGETHER as a combination. Identify the single most likely common root cause and repair that explains all or most codes firing together. Think about what underlying failure (e.g. timing chain, wiring harness, oil pressure, software fault, sensor failure) would trigger this exact combination on this specific vehicle.
-
+Analyse these codes TOGETHER as a combination. Identify the single most likely common root cause and repair that explains all or most codes firing together.
 Return ONLY a valid JSON object with exactly these fields (no markdown, no code fences, just raw JSON):
 {
-  "name": "short combined diagnosis name (e.g. 'Timing Chain / Cam & Crank Sensor Fault')",
+  "name": "short combined diagnosis name",
   "system": "primary vehicle system affected",
   "code_type": "Generic (SAE), Manufacturer-specific (${mfrGroup || 'OEM'}), or Mixed",
   "severity": "high | medium | low",
   "severity_note": "one sentence on whether it is safe to drive with these codes active",
   "vehicle": "${vehicleInfo ?? ''}",
-  "vehicle_note": "known TSBs, technical service bulletins, or common issues for this code combination on this specific make/model/year/engine — be specific and detailed",
-  "common_repair": "the single most likely combined repair that addresses all or most of these codes together, with make/model-specific detail",
+  "vehicle_note": "known TSBs or common issues for this code combination on this specific make/model/year",
+  "common_repair": "the single most likely combined repair that addresses all or most of these codes together",
   "causes": ["root cause 1 explaining multiple codes", "root cause 2", "root cause 3"],
   "tests": ["diagnostic step 1", "diagnostic step 2", "diagnostic step 3"],
   "fixes": ["combined repair 1", "combined repair 2", "combined repair 3"],
@@ -128,31 +149,30 @@ Return ONLY a valid JSON object with exactly these fields (no markdown, no code 
 }`
   } else {
     const code = codes[0]
+    const codePrefix = code.charAt(0).toUpperCase()
     const secondChar = code.length >= 2 ? code[1] : '0'
-    const isMfrSpecific = secondChar !== '0' || code[0] !== 'P'
-    const codeTypeHint = isMfrSpecific && mfrGroup
-      ? `This code appears to be manufacturer-specific for ${mfrGroup}. Interpret it using the ${mfrGroup} DTC database.`
+    const isMfrSpecific = secondChar !== '0' || codePrefix !== 'P'
+    const codeSystemDesc = getCodeSystem(code)
+    const codeTypeHint = codeSystemDesc
+      ? `This is a ${codePrefix}-code: ${codeSystemDesc}. You MUST diagnose it within that system — do not reassign it to a different system.${isMfrSpecific && mfrGroup ? ` It is manufacturer-specific for ${mfrGroup} — use the ${mfrGroup} DTC database.` : ''}`
       : ''
 
     prompt = `You are a master automotive technician with comprehensive knowledge of OBD-II diagnostics, all manufacturer-specific DTC databases, and vehicle repair across all makes and models.
-
 Diagnose fault code ${code}${vehicleInfo ? ` on a ${vehicleInfo}${engineInfo ? ` (${engineInfo})` : ''}` : ''}.
 ${mfrContext ? '\n' + mfrContext : ''}
 ${vinContext ? vinContext + '\n' : ''}
 ${codeTypeHint ? codeTypeHint + '\n' : ''}
 ${mfrCodeNote}
-
 ${langNote}
-
 Return ONLY a valid JSON object with exactly these fields (no markdown, no code fences, just raw JSON):
 {
-  "name": "specific, accurate name for this code on this vehicle (e.g. 'B Camshaft Position Slow Response Bank 1' for P000B on Jeep/Chrysler)",
-  "system": "vehicle system affected (e.g. Variable Valve Timing, Engine Timing, Fuel System)",
+  "name": "specific, accurate name for this code on this vehicle (e.g. 'Battery Voltage Low — ABS/ESP Module' for C2100-16 on Jeep/Chrysler)",
+  "system": "exact vehicle system affected (e.g. Chassis — ABS/Electronic Brake System, Body — BCM, Powertrain — VVT)",
   "code_type": "Generic (SAE) or Manufacturer-specific (${mfrGroup || 'OEM'})",
   "severity": "high | medium | low",
   "severity_note": "one sentence on whether it is safe to drive",
   "vehicle": "${vehicleInfo ?? ''}",
-  "vehicle_note": "specific known TSBs, common failures, or issues for this exact code on this make/model/year/engine — be detailed and specific",
+  "vehicle_note": "specific known TSBs, common failures, or issues for this exact code on this make/model/year — be detailed",
   "common_repair": "",
   "causes": ["cause 1 specific to this vehicle/code", "cause 2", "cause 3"],
   "tests": ["diagnostic step 1 with specific procedure", "diagnostic step 2", "diagnostic step 3"],
