@@ -265,10 +265,10 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
     <h2><span class="icon">⚠️</span> <span data-en="OBD-II Fault Code Lookup" data-es="Búsqueda de Códigos OBD-II">OBD-II Fault Code Lookup</span></h2>
     <p style="color:var(--text2);font-size:0.85rem;margin-bottom:12px;" data-en="Enter up to 4 codes for combined AI diagnosis — identifies common repairs for codes that appear together" data-es="Ingresa hasta 4 códigos para diagnóstico IA combinado — identifica reparaciones comunes para códigos que aparecen juntos">Enter up to 4 codes for combined AI diagnosis — identifies common repairs for codes that appear together</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:12px;">
-      <input type="text" id="dtc-input-1" maxlength="6" placeholder="Code 1 (required)" data-en-placeholder="Code 1 (required)" data-es-placeholder="Código 1 (obligatorio)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
-      <input type="text" id="dtc-input-2" maxlength="6" placeholder="Code 2 (optional)" data-en-placeholder="Code 2 (optional)" data-es-placeholder="Código 2 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
-      <input type="text" id="dtc-input-3" maxlength="6" placeholder="Code 3 (optional)" data-en-placeholder="Code 3 (optional)" data-es-placeholder="Código 3 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
-      <input type="text" id="dtc-input-4" maxlength="6" placeholder="Code 4 (optional)" data-en-placeholder="Code 4 (optional)" data-es-placeholder="Código 4 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
+      <input type="text" id="dtc-input-1" maxlength="12" placeholder="Code 1 (required)" data-en-placeholder="Code 1 (required)" data-es-placeholder="Código 1 (obligatorio)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
+      <input type="text" id="dtc-input-2" maxlength="12" placeholder="Code 2 (optional)" data-en-placeholder="Code 2 (optional)" data-es-placeholder="Código 2 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
+      <input type="text" id="dtc-input-3" maxlength="12" placeholder="Code 3 (optional)" data-en-placeholder="Code 3 (optional)" data-es-placeholder="Código 3 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
+      <input type="text" id="dtc-input-4" maxlength="12" placeholder="Code 4 (optional)" data-en-placeholder="Code 4 (optional)" data-es-placeholder="Código 4 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
     </div>
     <button class="btn btn-primary" onclick="lookupDTC()" style="width:100%;font-size:1.05rem;padding:12px;"><span data-en="🔍 Diagnose Codes" data-es="🔍 Diagnosticar Códigos">🔍 Diagnose Codes</span></button>
     <p style="color:var(--text2);font-size:0.82rem;margin-top:8px;" data-en="Supports P, B, C, U codes — generic and manufacturer-specific" data-es="Compatible con códigos P, B, C, U — genéricos y específicos del fabricante">Supports P, B, C, U codes — generic and manufacturer-specific</p>
@@ -639,7 +639,7 @@ function vehiclePayload() {
 }
 
 async function lookupDTC() {
-  const codeRe = /^[PBCU][0-9A-F]{4}$/;
+  const codeRe = /^[PBCU][0-9A-F]{4}(-[0-9A-Fa-f0-9]{1,4})?$/i;
   const inputs = ['dtc-input-1','dtc-input-2','dtc-input-3','dtc-input-4']
     .map(id => { const el = document.getElementById(id); return el ? el.value.trim().toUpperCase() : ''; })
     .filter(v => v.length > 0);
