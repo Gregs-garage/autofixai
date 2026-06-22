@@ -11,226 +11,341 @@ function getUserFromRequest(req: Request): { id: string; email: string | null } 
     const parts = token.split('.')
     if (parts.length !== 3) return null
     const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'))
-    if (!payload?.sub) return null
-    return { id: payload.sub, email: payload.email ?? null }
+    const id = payload.sub || payload.id || payload.user_id || null
+    const email = payload.email || null
+    if (!id) return null
+    return { id, email }
   } catch {
     return null
   }
 }
 
-/** Map vehicle make to manufacturer group for manufacturer-specific code context */
-function getMfrGroup(make: string): string {
-  const m = (make || '').toLowerCase()
-  if (['jeep','chrysler','dodge','ram','fiat','alfa romeo','maserati'].some(x => m.includes(x))) return 'Stellantis/Chrysler (FCA)'
-  if (['ford','lincoln','mercury'].some(x => m.includes(x))) return 'Ford Motor Company'
-  if (['chevrolet','chevy','gmc','buick','cadillac','pontiac','oldsmobile','saturn'].some(x => m.includes(x))) return 'General Motors (GM)'
-  if (['toyota','lexus','scion'].some(x => m.includes(x))) return 'Toyota Motor Corporation'
-  if (['honda','acura'].some(x => m.includes(x))) return 'Honda Motor Company'
-  if (['nissan','infiniti'].some(x => m.includes(x))) return 'Nissan Motor Company'
-  if (['volkswagen','vw','audi','porsche','seat','skoda'].some(x => m.includes(x))) return 'Volkswagen Group (VAG)'
-  if (['bmw','mini','rolls-royce'].some(x => m.includes(x))) return 'BMW Group'
-  if (['mercedes','mercedes-benz','sprinter','smart'].some(x => m.includes(x))) return 'Mercedes-Benz (Daimler)'
-  if (['hyundai','kia','genesis'].some(x => m.includes(x))) return 'Hyundai Motor Group'
-  if (['subaru'].some(x => m.includes(x))) return 'Subaru (Fuji Heavy Industries)'
-  if (['mazda'].some(x => m.includes(x))) return 'Mazda Motor Corporation'
-  if (['volvo'].some(x => m.includes(x))) return 'Volvo Cars (Geely)'
-  return ''
+function getCodeSystem(code: string): string {
+  const upper = code.toUpperCase()
+  const prefix = upper.charAt(0)
+  if (prefix === 'P') return 'Powertrain'
+  if (prefix === 'B') return 'Body'
+  if (prefix === 'U') return 'Network/Communication'
+  if (prefix === 'C') {
+    const num = parseInt(upper.substring(1, 5), 16)
+    if (upper.startsWith('C0')) return 'Chassis - ABS/Traction Control'
+    if (upper.startsWith('C1') || upper.startsWith('C2')) return 'Chassis - Manufacturer Specific'
+    return 'Chassis'
+  }
+  return 'Unknown'
 }
 
-/** Get OBD-II system description from code prefix letter */
-function getCodeSystem(code: string): string {
-  const prefix = (code || '').charAt(0).toUpperCase()
-  switch (prefix) {
-    case 'P': return 'Powertrain (engine, transmission, fuel, emissions)'
-    case 'B': return 'Body (BCM, airbags, comfort systems, lighting, windows, seats)'
-    case 'C': return 'Chassis (ABS, traction control, stability control, steering, suspension, brakes)'
-    case 'U': return 'Network/Communication (CAN bus, module communication, data link)'
-    default: return ''
+// Normalize make name to match dtcdecode.com URL format
+function normalizeMake(make: string): string {
+  const m = make.trim()
+  const map: Record<string, string> = {
+    'jeep': 'Jeep',
+    'dodge': 'Dodge',
+    'chrysler': 'Chrysler',
+    'ram': 'RAM',
+    'fiat': 'FIAT',
+    'ford': 'Ford',
+    'lincoln': 'Lincoln',
+    'mercury': 'Mercury',
+    'toyota': 'Toyota',
+    'lexus': 'Lexus',
+    'scion': 'Scion',
+    'honda': 'Honda',
+    'acura': 'Acura',
+    'nissan': 'Nissan',
+    'infiniti': 'Infiniti',
+    'mazda': 'Mazda',
+    'chevrolet': 'Chevrolet',
+    'chevy': 'Chevrolet',
+    'gmc': 'GMC',
+    'buick': 'Buick',
+    'cadillac': 'Cadillac',
+    'pontiac': 'Pontiac',
+    'oldsmobile': 'Oldsmobile',
+    'saturn': 'Saturn',
+    'hummer': 'HUMMER',
+    'bmw': 'BMW',
+    'mini': 'MINI',
+    'mercedes': 'Mercedes-Benz',
+    'mercedes-benz': 'Mercedes-Benz',
+    'volkswagen': 'Volkswagen',
+    'vw': 'Volkswagen',
+    'audi': 'Audi',
+    'volvo': 'Volvo',
+    'subaru': 'Subaru',
+    'mitsubishi': 'Mitsubishi',
+    'hyundai': 'Hyundai',
+    'kia': 'Kia',
+    'isuzu': 'Isuzu',
+    'jaguar': 'Jaguar',
+    'land rover': 'Land Rover',
+    'landrover': 'Land Rover',
+    'saab': 'Saab',
+    'suzuki': 'Suzuki',
+    'geo': 'Geo',
+    'daewoo': 'Daewoo',
+    'eagle': 'Eagle',
+    'plymouth': 'Plymouth',
+    'alfa romeo': 'Alfa Romeo',
+    'alfaromeo': 'Alfa Romeo',
+  }
+  return map[m.toLowerCase()] || m
+}
+
+// Look up a DTC code on dtcdecode.com for a specific make
+async function lookupDTCDecode(make: string, code: string): Promise<{ found: boolean; definition?: string; description?: string; causes?: string[]; failureType?: string } | null> {
+  try {
+    const normalizedMake = normalizeMake(make)
+    // Format code: strip spaces, uppercase
+    const formattedCode = code.trim().toUpperCase().replace(/\s+/g, '')
+    const url = `https://www.dtcdecode.com/${encodeURIComponent(normalizedMake)}/${encodeURIComponent(formattedCode)}`
+
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; AutoFixAI/1.0)',
+        'Accept': 'text/html',
+      },
+      signal: AbortSignal.timeout(8000),
+    })
+
+    if (!resp.ok) return { found: false }
+
+    const html = await resp.text()
+
+    // Check for error page
+    if (html.includes('The page you requested cannot be found') || html.includes('You Got an Error')) {
+      return { found: false }
+    }
+
+    // Parse definition
+    const defMatch = html.match(/Definition:\s*<\/[^>]+>\s*<[^>]+>([^<]+)</)
+    const definition = defMatch ? defMatch[1].trim() : null
+
+    if (!definition) return { found: false }
+
+    // Parse description
+    const descMatch = html.match(/Description:\s*<\/[^>]+>\s*<[^>]+>([^<]+)</)
+    const description = descMatch ? descMatch[1].trim() : undefined
+
+    // Parse causes
+    const causesMatch = html.match(/Cause:\s*<\/[^>]+>([\s\S]*?)(?:Failure Type:|<\/section>|$)/)
+    const causes: string[] = []
+    if (causesMatch) {
+      const causeHtml = causesMatch[1]
+      const liMatches = causeHtml.match(/<li[^>]*>([^<]+)<\/li>/g) || []
+      liMatches.forEach(li => {
+        const text = li.replace(/<[^>]+>/g, '').trim()
+        if (text) causes.push(text)
+      })
+    }
+
+    // Parse failure type
+    const ftMatch = html.match(/Failure Type:\s*<\/[^>]+>\s*<[^>]+>([^<]+)</)
+    const failureType = ftMatch ? ftMatch[1].trim() : undefined
+
+    return { found: true, definition, description, causes, failureType }
+  } catch {
+    return null
   }
 }
 
-export default async (req: Request, context: Context) => {
+function safeArr(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []
+}
+
+export default async function handler(req: Request, context: Context) {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    })
+  }
+
   const user = getUserFromRequest(req)
-  if (!user) return Response.json({ error: 'You must be signed in.' }, { status: 401 })
+  if (!user) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    })
+  }
 
   const sub = await getByUserId(user.id)
   if (!isActive(sub)) {
-    return Response.json({ error: 'AutoFix Pro subscription required.' }, { status: 403 })
+    return new Response(JSON.stringify({ error: 'Subscription required' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    })
   }
 
-  const openaiKey = process.env.OPENAI_API_KEY
-  if (!openaiKey) {
-    return Response.json(
-      { error: 'AI diagnosis is not configured. Set OPENAI_API_KEY in Netlify site settings.' },
-      { status: 503 },
-    )
-  }
-
-  let body: any
+  let body: { codes?: string[]; vin?: string; make?: string; model?: string; year?: string | number; engine?: string }
   try {
     body = await req.json()
   } catch {
-    return Response.json({ error: 'Invalid JSON body.' }, { status: 400 })
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    })
   }
 
-  // Support multi-code array (codes) or single code (code/dtc) for backwards compat
-  let codes: string[] = []
-  if (Array.isArray(body?.codes) && body.codes.length > 0) {
-    codes = body.codes.map((c: string) => String(c).toUpperCase().trim()).filter(Boolean)
-  } else {
-    const single = (body?.code || body?.dtc || '').toUpperCase().trim()
-    if (single) codes = [single]
+  const codes: string[] = safeArr(body.codes).map((c: string) => c.trim().toUpperCase()).filter(Boolean)
+  if (!codes.length) {
+    return new Response(JSON.stringify({ error: 'No codes provided' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    })
   }
-  if (codes.length === 0) return Response.json({ error: 'At least one code is required.' }, { status: 400 })
 
-  const vehicle = body?.vehicle ?? null
-  const lang: string = body?.lang === 'es' ? 'es' : 'en'
+  const make = typeof body.make === 'string' ? body.make.trim() : ''
+  const model = typeof body.model === 'string' ? body.model.trim() : ''
+  const year = body.year ? String(body.year).trim() : ''
+  const engine = typeof body.engine === 'string' ? body.engine.trim() : ''
+  const vehicleDesc = [year, make, model, engine].filter(Boolean).join(' ')
 
-  const vehicleInfo = vehicle
-    ? [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')
-    : null
+  const apiKey = Netlify.env.get('OPENAI_API_KEY')
+  if (!apiKey) {
+    return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    })
+  }
 
-  const engineInfo = vehicle?.engine || null
-  const makeStr: string = vehicle?.make || ''
-  const mfrGroup = getMfrGroup(makeStr)
-  const vinStr: string = vehicle?.vin || ''
+  // ── Step 1: Look up each code on DTCDecode for verified real-world definitions ──
+  const verifiedLookups: Array<{ code: string; verified: boolean; definition?: string; description?: string; causes?: string[]; failureType?: string }> = []
 
-  const langNote = lang === 'es' ? 'Respond entirely in Spanish.' : 'Respond in English.'
-  const isMulti = codes.length > 1
-  const codeList = codes.join(', ')
+  for (const code of codes) {
+    if (make) {
+      const result = await lookupDTCDecode(make, code)
+      if (result && result.found && result.definition) {
+        verifiedLookups.push({ code, verified: true, ...result })
+      } else {
+        verifiedLookups.push({ code, verified: false })
+      }
+    } else {
+      verifiedLookups.push({ code, verified: false })
+    }
+  }
 
-  const mfrContext = mfrGroup
-    ? `The vehicle manufacturer group is ${mfrGroup}. Use your knowledge of ${mfrGroup} manufacturer-specific DTCs when interpreting these codes.`
-    : ''
+  // ── Step 2: Build enriched context for GPT ──
+  const verifiedContext = verifiedLookups
+    .filter(v => v.verified)
+    .map(v => {
+      let ctx = `Code ${v.code}: VERIFIED DEFINITION = "${v.definition}"`
+      if (v.description) ctx += `. Description: ${v.description}`
+      if (v.causes && v.causes.length > 0) ctx += `. Known causes: ${v.causes.join('; ')}`
+      if (v.failureType) ctx += `. Failure type: ${v.failureType}`
+      return ctx
+    })
+    .join('\n')
 
-  const vinContext = vinStr
-    ? `VIN: ${vinStr}. Use the VIN to confirm the exact platform, engine family, and model year when interpreting codes.`
-    : ''
+  const unverifiedCodes = verifiedLookups.filter(v => !v.verified).map(v => v.code)
 
-  const mfrCodeNote = `CRITICAL INSTRUCTIONS FOR CODE INTERPRETATION:
-1. OBD-II codes are categorised by their FIRST LETTER — this determines the vehicle SYSTEM:
-   - P = Powertrain (engine, transmission, fuel, emissions)
-   - B = Body (BCM, airbags, comfort, lighting, windows, seats)
-   - C = Chassis (ABS, traction control, stability control, steering, suspension, brakes, wheel speed sensors)
-   - U = Network/Communication (CAN bus, module communication)
-   NEVER confuse these categories. A C-code is ALWAYS a Chassis code, NEVER a Body code.
-2. Extended manufacturer codes with hyphens (e.g. C2100-16, U0100-00) are valid — the suffix after the hyphen is a manufacturer-specific failure type sub-code. Interpret the full code including the suffix.
-3. Manufacturer-specific code examples for Stellantis/Chrysler (FCA):
-   - C2100-16 on Jeep/Chrysler = Battery Voltage Low (Chassis — ABS/ESP/electronic brake system module detecting low battery supply voltage). Failure type -16 = signal circuit low voltage.
-   - C2100-04 = Battery Voltage High
-   - P000B = B Camshaft Position Slow Response Bank 1 (VVT)
-4. When the vehicle make is known, ALWAYS interpret codes using that manufacturer's DTC definitions.
-5. NEVER respond with "unknown code", "not recognized", "code not found", or "not applicable". You MUST provide a complete, meaningful diagnosis for EVERY code entered.`
+  // ── Step 3: Build GPT prompt ──
+  const systemPrompt = `You are an expert automotive diagnostic technician with 30+ years of experience across all makes and models.
 
-  let prompt: string
+CRITICAL RULES:
+1. If a VERIFIED DEFINITION is provided for a code, you MUST use exactly that definition. Do not alter, guess, or replace it.
+2. Manufacturer-specific codes (e.g. C155E-92, C212A-16, B1C29) mean DIFFERENT things on different makes. Always use the make-specific meaning.
+3. When multiple codes are entered, treat them as CLUES that together point to a single root cause. Cross-reference them to find the ONE most likely root cause.
+4. Base your diagnosis on real-world mechanic knowledge, not generic guesses.
+5. For C-codes on FCA/Jeep/Dodge/Chrysler/Ram: C0xxx = ABS/Chassis; C1xxx/C2xxx = manufacturer-specific (charging, air suspension, damping, body, network). Never call C1xxx/C2xxx FCA codes ABS codes.
 
-  if (isMulti) {
-    prompt = `You are a master automotive technician with comprehensive knowledge of OBD-II diagnostics, all manufacturer-specific DTC databases, and vehicle repair across all makes and models.
-A vehicle has multiple fault codes active simultaneously: ${codeList}${vehicleInfo ? ` on a ${vehicleInfo}${engineInfo ? ` (${engineInfo})` : ''}` : ''}.
-${mfrContext ? '\n' + mfrContext : ''}
-${vinContext ? vinContext + '\n' : ''}
-${mfrCodeNote}
-${langNote}
-Analyse these codes TOGETHER as a combination. Identify the single most likely common root cause and repair that explains all or most codes firing together.
-Return ONLY a valid JSON object with exactly these fields (no markdown, no code fences, just raw JSON):
+${verifiedContext ? `VERIFIED CODE DEFINITIONS (from manufacturer database - use these exactly):\n${verifiedContext}` : ''}
+${unverifiedCodes.length > 0 ? `Codes without verified definitions (use your best manufacturer-specific knowledge for ${make || 'this vehicle'}): ${unverifiedCodes.join(', ')}` : ''}
+
+Vehicle: ${vehicleDesc || 'Unknown vehicle'}
+Codes to diagnose: ${codes.join(', ')}
+
+Respond with valid JSON only. No markdown, no explanation outside JSON. Use this exact structure:
 {
-  "name": "short combined diagnosis name",
-  "system": "primary vehicle system affected",
-  "code_type": "Generic (SAE), Manufacturer-specific (${mfrGroup || 'OEM'}), or Mixed",
-  "severity": "high | medium | low",
-  "severity_note": "one sentence on whether it is safe to drive with these codes active",
-  "vehicle": "${vehicleInfo ?? ''}",
-  "vehicle_note": "known TSBs or common issues for this code combination on this specific make/model/year",
-  "common_repair": "the single most likely combined repair that addresses all or most of these codes together",
-  "causes": ["root cause 1 explaining multiple codes", "root cause 2", "root cause 3"],
-  "tests": ["diagnostic step 1", "diagnostic step 2", "diagnostic step 3"],
-  "fixes": ["combined repair 1", "combined repair 2", "combined repair 3"],
-  "repair_estimate": "rough cost range and labour time estimate for the combined repair"
+  "name": "short combined fault name (e.g. Air Ride High Pressure Vent Control - Performance Fault)",
+  "system": "affected vehicle system",
+  "severity": "Low|Medium|High",
+  "driveAdvice": "Is it safe to drive?",
+  "rootCause": "The single most likely root cause combining all codes",
+  "vehicleSpecificNote": "Any known issues specific to this make/model/year/engine",
+  "causes": ["cause 1", "cause 2", "cause 3"],
+  "tests": ["test 1", "test 2", "test 3"],
+  "fixes": ["fix 1", "fix 2", "fix 3"],
+  "estimatedCost": "cost range and labor hours",
+  "combinedRepair": "The most likely single repair that addresses all codes"
 }`
-  } else {
-    const code = codes[0]
-    const codePrefix = code.charAt(0).toUpperCase()
-    const secondChar = code.length >= 2 ? code[1] : '0'
-    const isMfrSpecific = secondChar !== '0' || codePrefix !== 'P'
-    const codeSystemDesc = getCodeSystem(code)
-    const codeTypeHint = codeSystemDesc
-      ? `This is a ${codePrefix}-code: ${codeSystemDesc}. You MUST diagnose it within that system — do not reassign it to a different system.${isMfrSpecific && mfrGroup ? ` It is manufacturer-specific for ${mfrGroup} — use the ${mfrGroup} DTC database.` : ''}`
-      : ''
 
-    prompt = `You are a master automotive technician with comprehensive knowledge of OBD-II diagnostics, all manufacturer-specific DTC databases, and vehicle repair across all makes and models.
-Diagnose fault code ${code}${vehicleInfo ? ` on a ${vehicleInfo}${engineInfo ? ` (${engineInfo})` : ''}` : ''}.
-${mfrContext ? '\n' + mfrContext : ''}
-${vinContext ? vinContext + '\n' : ''}
-${codeTypeHint ? codeTypeHint + '\n' : ''}
-${mfrCodeNote}
-${langNote}
-Return ONLY a valid JSON object with exactly these fields (no markdown, no code fences, just raw JSON):
-{
-  "name": "specific, accurate name for this code on this vehicle (e.g. 'Battery Voltage Low — ABS/ESP Module' for C2100-16 on Jeep/Chrysler)",
-  "system": "exact vehicle system affected (e.g. Chassis — ABS/Electronic Brake System, Body — BCM, Powertrain — VVT)",
-  "code_type": "Generic (SAE) or Manufacturer-specific (${mfrGroup || 'OEM'})",
-  "severity": "high | medium | low",
-  "severity_note": "one sentence on whether it is safe to drive",
-  "vehicle": "${vehicleInfo ?? ''}",
-  "vehicle_note": "specific known TSBs, common failures, or issues for this exact code on this make/model/year — be detailed",
-  "common_repair": "",
-  "causes": ["cause 1 specific to this vehicle/code", "cause 2", "cause 3"],
-  "tests": ["diagnostic step 1 with specific procedure", "diagnostic step 2", "diagnostic step 3"],
-  "fixes": ["fix 1 with part names where applicable", "fix 2", "fix 3"],
-  "repair_estimate": "rough cost range and labour time estimate"
-}`
-  }
+  const userMessage = codes.length === 1
+    ? `Diagnose code ${codes[0]} on a ${vehicleDesc}.`
+    : `Diagnose these codes together on a ${vehicleDesc}: ${codes.join(', ')}. Find the single root cause that explains all of them.`
 
+  // ── Step 4: Call OpenAI ──
+  let aiResult: Record<string, unknown> = {}
   try {
-    const aiRes = await fetch(OPENAI_API, {
+    const aiResp = await fetch(OPENAI_API, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiKey}` },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 1100,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
         temperature: 0.2,
-        response_format: { type: 'json_object' },
+        max_tokens: 1000,
       }),
     })
 
-    if (!aiRes.ok) {
-      const err = await aiRes.text()
-      return Response.json({ error: `OpenAI error: ${err}` }, { status: 502 })
+    const aiJson = await aiResp.json() as { choices?: Array<{ message?: { content?: string } }>; error?: { message: string } }
+
+    if (aiJson.error) throw new Error(aiJson.error.message)
+
+    const content = aiJson.choices?.[0]?.message?.content?.trim() || '{}'
+    const cleaned = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
+    aiResult = JSON.parse(cleaned)
+  } catch (err) {
+    console.error('AI error:', err)
+    aiResult = {
+      name: verifiedLookups[0]?.definition || codes.join(', '),
+      system: getCodeSystem(codes[0]),
+      severity: 'Medium',
+      driveAdvice: 'Have vehicle inspected before driving.',
+      rootCause: 'Unable to determine - AI analysis failed. Please consult a certified technician.',
+      vehicleSpecificNote: '',
+      causes: verifiedLookups.map(v => v.definition || v.code),
+      tests: ['Perform manufacturer-specific scan with factory tool'],
+      fixes: ['Consult a certified dealer technician'],
+      estimatedCost: 'Unknown',
+      combinedRepair: 'Dealer diagnosis recommended',
     }
-
-    const aiJson = await aiRes.json()
-    const raw = aiJson.choices?.[0]?.message?.content ?? '{}'
-
-    let parsed: any
-    try {
-      parsed = JSON.parse(raw)
-    } catch {
-      return Response.json({ error: 'AI returned invalid JSON.' }, { status: 502 })
-    }
-
-    const safeArr = (v: any) => (Array.isArray(v) ? v : typeof v === 'string' ? [v] : [])
-
-    return Response.json({
-      name: parsed.name || codeList,
-      system: parsed.system || '',
-      code_type: parsed.code_type || '',
-      severity: parsed.severity || 'medium',
-      severity_note: parsed.severity_note || '',
-      vehicle: parsed.vehicle || vehicleInfo || '',
-      vehicle_note: parsed.vehicle_note || '',
-      common_repair: parsed.common_repair || '',
-      causes: safeArr(parsed.causes),
-      tests: safeArr(parsed.tests),
-      fixes: safeArr(parsed.fixes),
-      repair_estimate: parsed.repair_estimate || '',
-    })
-  } catch (err: any) {
-    return Response.json({ error: err?.message || 'AI request failed.' }, { status: 502 })
   }
+
+  // ── Step 5: Override AI name/definition with verified data if available ──
+  const primaryVerified = verifiedLookups.find(v => v.verified)
+  if (primaryVerified && primaryVerified.definition) {
+    if (codes.length === 1) {
+      aiResult.name = primaryVerified.definition
+    }
+    // Always tag as verified
+    aiResult.verifiedDefinitions = verifiedLookups
+      .filter(v => v.verified)
+      .map(v => ({ code: v.code, definition: v.definition, source: 'dtcdecode.com' }))
+  }
+
+  aiResult.codes = codes
+  aiResult.vehicle = vehicleDesc
+  aiResult.codesCount = codes.length
+
+  return new Response(JSON.stringify(aiResult), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+  })
 }
 
 export const config: Config = {
   path: '/api/diagnose',
-  method: 'POST',
 }
