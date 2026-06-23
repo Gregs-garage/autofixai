@@ -341,7 +341,7 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
   <div class="pricing-wrap">
     <div class="plan-card">
       <div class="plan-name">⭐ <span data-en="AutoFix Pro" data-es="AutoFix Pro">AutoFix Pro</span></div>
-      <div class="plan-price">$9.99 <span data-en="/ month" data-es="/ mes">/ month</span></div>
+      <div class="plan-price">$19.99 <span data-en="/ month" data-es="/ mes">/ month</span></div>
       <ul class="plan-feats">
         <li data-en="Unlimited VIN decodes & OBD-II code lookups" data-es="Decodificaciones VIN y búsquedas de códigos OBD-II ilimitadas">Unlimited VIN decodes &amp; OBD-II code lookups</li>
         <li data-en="Full TSB & recall reports for every vehicle" data-es="Reportes completos de TSB y recalls para cada vehículo">Full TSB &amp; recall reports for every vehicle</li>
@@ -349,7 +349,7 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
         <li data-en="Printable service checklists & job sheets" data-es="Listas de servicio y hojas de trabajo imprimibles">Printable service checklists &amp; job sheets</li>
         <li data-en="Priority support, cancel anytime" data-es="Soporte prioritario, cancela cuando quieras">Priority support, cancel anytime</li>
       </ul>
-      <button class="btn btn-primary" id="subscribe-btn" onclick="startSubscribe()" data-en="Subscribe — $9.99/mo" data-es="Suscribirse — $9.99/mes">Subscribe — $9.99/mo</button>
+      <button class="btn btn-primary" id="subscribe-btn" onclick="startSubscribe()" data-en="Subscribe — $19.99/mo" data-es="Suscribirse — $19.99/mes">Subscribe — $19.99/mo</button>
       <div class="plan-note" id="plan-note" data-en="Secure checkout powered by Stripe. Sign in required." data-es="Pago seguro con Stripe. Requiere iniciar sesión.">Secure checkout powered by Stripe. Sign in required.</div>
       <div class="plan-note" style="margin-top:10px;">
         <a href="#" id="preview-link" onclick="enterPreview();return false;" style="color:var(--accent);" data-en="Have a test password? Unlock Pro to preview" data-es="¿Tienes una contraseña de prueba? Desbloquea Pro">Have a test password? Unlock Pro to preview</a>
@@ -1017,11 +1017,11 @@ function renderPricing() {
     note.textContent = t('You are an AutoFix Pro member. Manage or cancel anytime.',
       'Eres miembro de AutoFix Pro. Administra o cancela cuando quieras.');
   } else if (subState.authenticated) {
-    btn.textContent = t('Subscribe — $9.99/mo', 'Suscribirse — $9.99/mes');
+    btn.textContent = t('Subscribe — $19.99/mo', 'Suscribirse — $19.99/mes');
     btn.disabled = false;
     note.textContent = t('Secure checkout powered by Stripe.', 'Pago seguro con Stripe.');
   } else {
-    btn.textContent = t('Subscribe — $9.99/mo', 'Suscribirse — $9.99/mes');
+    btn.textContent = t('Subscribe — $19.99/mo', 'Suscribirse — $19.99/mes');
     btn.disabled = false;
     note.textContent = t('Secure checkout powered by Stripe. Sign in required.',
       'Pago seguro con Stripe. Requiere iniciar sesión.');
@@ -1049,10 +1049,10 @@ function renderGate(tabEl, name) {
   let html = '<div class="gate-icon">🔒</div>';
   html += '<h2>' + t('AutoFix Pro members only', 'Solo miembros de AutoFix Pro') + '</h2>';
   if (signedIn) {
-    html += '<p>' + t('Your account is not subscribed yet. Unlock ' + feature + ' and all pro tools for $9.99/month.',
-                      'Tu cuenta aún no está suscrita. Desbloquea ' + feature + ' y todas las herramientas pro por $9.99/mes.') + '</p>';
+    html += '<p>' + t('Your account is not subscribed yet. Unlock ' + feature + ' and all pro tools for $19.99/month.',
+                      'Tu cuenta aún no está suscrita. Desbloquea ' + feature + ' y todas las herramientas pro por $19.99/mes.') + '</p>';
     html += '<div class="gate-actions"><button class="btn btn-primary" onclick="showTab(\'pricing\')">' +
-            t('Subscribe — $9.99/mo', 'Suscribirse — $9.99/mes') + '</button>' +
+            t('Subscribe — $19.99/mo', 'Suscribirse — $19.99/mes') + '</button>' +
             '<button class="btn btn-secondary" onclick="enterPreview()">' + t('Use a test password', 'Usar contraseña de prueba') + '</button></div>';
   } else {
     html += '<p>' + t('Sign in and subscribe to AutoFix Pro to use ' + feature + '. VIN decoding stays free for everyone.',
