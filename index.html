@@ -980,6 +980,7 @@ async function refreshSubscription() {
   try {
     const res = await fetch('/api/subscription', { headers: { 'accept': 'application/json', 'Authorization': 'Bearer ' + (JSON.parse(localStorage.getItem('gotrue.user') || '{}')).token?.access_token } });
     subState = await res.json();
+    subState.active = !!subState.subscribed;
   } catch {
     subState = { authenticated: false, active: false };
   }
