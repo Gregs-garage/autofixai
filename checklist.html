@@ -6,193 +6,229 @@
 <title>Service Checklist — AutoFix AI</title>
 <style>
 :root {
-  --primary: #e63946;
-  --primary-dark: #c1121f;
-  --bg: #0d1117;
-  --bg2: #161b22;
-  --bg3: #21262d;
-  --border: #30363d;
-  --text: #e6edf3;
-  --text2: #8b949e;
-  --accent: #58a6ff;
-  --success: #3fb950;
-  --warning: #d29922;
-  --danger: #f85149;
+  --primary:#e63946;--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;
+  --border:#30363d;--text:#e6edf3;--text2:#8b949e;--accent:#58a6ff;
+  --success:#3fb950;--warning:#d29922;--danger:#f85149;
+  --done-bg:rgba(63,185,80,0.12);--done-border:#3fb950;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
-header { background: linear-gradient(135deg, #0d1117 0%, #1a0505 100%); border-bottom: 2px solid var(--primary); padding: 0 20px; position: sticky; top: 0; z-index: 100; }
-.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
-.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-.logo-icon { width: 44px; height: 44px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-.logo h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
-.logo span { color: var(--primary); }
-.back-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
-.back-btn:hover { border-color: var(--accent); color: var(--accent); }
-main { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
-.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-.card h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-input, select, textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 12px 16px; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
-input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-input::placeholder { color: var(--text2); }
-.btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-dark); }
-.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
-.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-.btn-success { background: var(--success); color: white; }
-.btn-danger { background: var(--danger); color: white; }
-.input-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.input-row input, .input-row select { flex: 1; min-width: 160px; }
-.error-msg { background: rgba(248,81,73,0.15); border: 1px solid var(--danger); color: var(--danger); padding: 12px 16px; border-radius: 8px; margin-top: 12px; }
-.success-msg { background: rgba(63,185,80,0.15); border: 1px solid var(--success); color: var(--success); padding: 12px 16px; border-radius: 8px; margin-top: 12px; }
-.loading { color: var(--text2); font-style: italic; padding: 20px; text-align: center; }
-.pro-tag { display: inline-block; background: linear-gradient(135deg,#d29922,#e63946); color: #fff; font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px; vertical-align: middle; }
-/* Checklist styles */
-.checklist-meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px; }
-.meta-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-.meta-box .lbl { font-size: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-.meta-box .val { font-size: 0.95rem; font-weight: 600; color: var(--text); }
-.section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 2px; cursor: pointer; user-select: none; }
-.section-header h3 { font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
-.section-header .count { font-size: 0.8rem; color: var(--text2); }
-.section-header .toggle-icon { color: var(--text2); transition: transform 0.2s; }
-.section-header.open .toggle-icon { transform: rotate(90deg); }
-.checklist-section { margin-bottom: 12px; }
-.checklist-items { display: none; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; background: var(--bg2); }
-.checklist-items.open { display: block; }
-.checklist-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
-.checklist-item:last-child { border-bottom: none; }
-.checklist-item:hover { background: var(--bg3); }
-.checklist-item.done { opacity: 0.6; }
-.checklist-item input[type="checkbox"] { width: 18px; height: 18px; min-width: 18px; margin-top: 2px; accent-color: var(--success); cursor: pointer; }
-.item-label { flex: 1; }
-.item-label .item-name { font-size: 0.92rem; font-weight: 500; color: var(--text); }
-.item-label .item-name.strikethrough { text-decoration: line-through; color: var(--text2); }
-.item-label .item-note { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
-.item-labour { font-size: 0.85rem; color: var(--accent); white-space: nowrap; padding-top: 2px; }
-.progress-bar-wrap { height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
-.progress-bar-fill { height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s; }
-.progress-label { font-size: 0.82rem; color: var(--text2); }
-.action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-.hidden { display: none !important; }
-footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 20px; text-align: center; color: var(--text2); font-size: 0.85rem; margin-top: 40px; }
-@media print {
-  header, .back-btn, .action-bar, .card:first-child { display: none !important; }
-  body { background: #fff; color: #000; }
-  .checklist-items { display: block !important; }
-  .card { border: 1px solid #ccc; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:10px;font-size:1.2rem;font-weight:700;}
+.logo-icon{background:var(--primary);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.back-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:0.85rem;text-decoration:none;}
+main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;}
+h2{font-size:1.05rem;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.job-header-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.job-header-grid input,.manual-grid input,.vin-row input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 11px;color:var(--text);font-size:0.9rem;width:100%;}
+.job-header-grid input:focus,.manual-grid input:focus,.vin-row input:focus{outline:none;border-color:var(--accent);}
+input::placeholder{color:var(--text2);}
+.rate-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.rate-row label{color:var(--text2);font-size:0.85rem;white-space:nowrap;}
+.rate-row input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:0.9rem;width:100px;}
+.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+.vfield{background:var(--bg3);border-radius:6px;padding:10px 12px;}
+.vfield-label{font-size:0.65rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;}
+.vfield-val{font-weight:600;font-size:0.95rem;}
+.progress-bar-wrap{background:var(--bg3);border-radius:6px;height:10px;margin:10px 0 6px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--success),#52d68a);border-radius:6px;transition:width 0.3s;}
+.progress-label{font-size:0.85rem;color:var(--text2);display:flex;justify-content:space-between;}
+.labour-summary{background:var(--bg3);border-radius:8px;padding:12px 16px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.labour-done{font-size:1.15rem;font-weight:700;color:var(--success);}
+.labour-done-label{font-size:0.72rem;color:var(--text2);margin-bottom:2px;}
+.labour-adjust-row{display:flex;align-items:center;gap:8px;}
+.labour-adjust-row label{font-size:0.8rem;color:var(--text2);}
+.labour-adjust-row input{width:75px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:5px 8px;color:var(--text);font-size:0.9rem;text-align:center;}
+.labour-total{font-size:0.9rem;color:var(--text2);text-align:right;}
+.labour-total strong{color:var(--accent);font-size:1rem;}
+.labour-cost-val{color:var(--success);font-size:1rem;font-weight:700;}
+.action-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.btn{border:none;border-radius:6px;padding:8px 15px;font-size:0.85rem;cursor:pointer;font-weight:500;transition:opacity 0.15s;}
+.btn:hover{opacity:0.85;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-outline{background:var(--bg3);border:1px solid var(--border);color:var(--text);}
+.btn-success{background:var(--success);color:#000;font-weight:600;}
+.btn-print{background:var(--primary);color:#fff;font-weight:600;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.section-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;user-select:none;}
+.section-title{font-weight:600;font-size:0.95rem;display:flex;align-items:center;gap:8px;}
+.section-meta{display:flex;align-items:center;gap:12px;color:var(--text2);font-size:0.85rem;}
+.section-hrs{font-weight:700;color:var(--success);}
+.chevron{transition:transform 0.2s;font-size:0.75rem;color:var(--text2);}
+.section-card.collapsed .chevron{transform:rotate(-90deg);}
+.section-items{border-top:1px solid var(--border);}
+.section-card.collapsed .section-items{display:none;}
+.checklist-item{display:flex;align-items:flex-start;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);transition:background 0.2s,border-left 0.2s;}
+.checklist-item:last-child{border-bottom:none;}
+.checklist-item.done{background:var(--done-bg);border-left:3px solid var(--done-border);}
+.checklist-item.done .item-name{color:var(--success);font-weight:600;}
+.checklist-item.done .item-note{color:rgba(63,185,80,0.65);}
+.checklist-item.done .item-hrs{color:var(--success);font-weight:700;}
+.item-check{width:18px;height:18px;cursor:pointer;accent-color:var(--success);flex-shrink:0;margin-top:2px;}
+.item-body{flex:1;}
+.item-name{font-size:0.9rem;font-weight:500;}
+.item-note{font-size:0.78rem;color:var(--text2);margin-top:2px;}
+.item-hrs{font-size:0.82rem;color:var(--text2);white-space:nowrap;flex-shrink:0;padding-top:2px;}
+.custom-item{background:rgba(88,166,255,0.05);border-left:3px solid rgba(88,166,255,0.4);}
+.custom-item.done{background:var(--done-bg);border-left:3px solid var(--done-border);}
+.custom-item .item-name{color:var(--accent);}
+.custom-item.done .item-name{color:var(--success);}
+.add-job-row{display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--border);background:var(--bg3);flex-wrap:wrap;align-items:center;}
+.add-job-row input{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:0.85rem;flex:1;min-width:140px;}
+.add-job-row input.hrs-input{width:80px;flex:none;}
+.add-job-row .btn{padding:7px 13px;font-size:0.82rem;}
+.vin-area{display:flex;flex-direction:column;gap:12px;}
+.vin-row{display:flex;gap:10px;}
+.manual-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;}
+.divider{text-align:center;color:var(--text2);font-size:0.8rem;position:relative;padding:4px 0;}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:44%;height:1px;background:var(--border);}
+.divider::before{left:0;}.divider::after{right:0;}
+.msg{padding:10px 14px;border-radius:6px;font-size:0.85rem;margin-top:10px;}
+.msg.success{background:rgba(63,185,80,0.15);border:1px solid var(--success);color:var(--success);}
+.msg.error{background:rgba(248,81,73,0.15);border:1px solid var(--danger);color:var(--danger);}
+footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
+/* Print */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  header,.back-btn,.action-bar,#setup-card,#progress-card,#job-info-card,.add-job-row,footer,
+  #global-add-job,.section-card:not(.has-done),.checklist-item:not(.done){display:none!important;}
+  body{background:#fff!important;color:#000!important;font-size:11pt;}
+  main{padding:0;max-width:100%;}
+  .card{border:1px solid #ccc!important;background:#fff!important;break-inside:avoid;}
+  .section-card{border:1px solid #ddd!important;background:#fff!important;break-inside:avoid;margin-bottom:8px;}
+  .section-card.collapsed .section-items{display:block!important;}
+  .section-header{background:#f5f5f5!important;padding:6px 12px;}
+  .section-title{color:#000!important;font-size:10pt;}
+  .section-meta{color:#555!important;font-size:9pt;}
+  .section-hrs{color:#1a7a2e!important;}
+  .checklist-item.done{background:#f0fff4!important;border-left:3px solid #2d8a3e!important;padding:6px 12px;}
+  .item-name{color:#000!important;font-size:10pt;}
+  .item-note{color:#555!important;font-size:8.5pt;}
+  .item-hrs{color:#1a7a2e!important;font-weight:700;font-size:10pt;}
+  #print-footer{display:block!important;border-top:2px solid #000;margin-top:16px;padding-top:12px;}
+  .vfield{background:#f9f9f9!important;border:1px solid #ddd!important;}
+  .vfield-label{color:#555!important;}
+  .vfield-val{color:#000!important;}
+  #job-info-print{display:flex!important;}
+  .job-info-print-item{flex:1;font-size:10pt;padding:4px 0;}
+  .job-info-print-item .pil{color:#555;font-size:8pt;text-transform:uppercase;}
+  .job-info-print-item .piv{font-weight:700;font-size:11pt;}
+  .chevron{display:none;}
 }
+@media screen{#print-footer{display:none;}#job-info-print{display:none;}}
 </style>
 </head>
 <body>
 <header>
-  <div class="header-inner">
-    <a class="logo" href="/">
-      <div class="logo-icon">🔧</div>
-      <h1>Auto<span>Fix</span> AI</h1>
-    </a>
-    <a class="back-btn" href="/">← Back to Dashboard</a>
-  </div>
+  <div class="logo"><div class="logo-icon">🔧</div><span>AutoFix <strong>AI</strong></span></div>
+  <a href="/" class="back-btn">← Back to Dashboard</a>
 </header>
-
 <main>
-  <!-- VIN / Vehicle Input -->
-  <div class="card" id="input-card">
-    <h2><span>📋</span> Service Checklist Generator <span class="pro-tag">PRO</span></h2>
-    <p style="color:var(--text2);margin-bottom:16px;font-size:0.9rem;">Enter a VIN or select your vehicle to generate a full service checklist. Tick off jobs, track labour time, and print a job sheet.</p>
-    <div class="input-row">
-      <input type="text" id="vin-input" maxlength="17" placeholder="Enter 17-digit VIN for best results..." style="text-transform:uppercase;font-family:monospace;letter-spacing:2px;font-size:1rem;">
-      <button class="btn btn-primary" onclick="generateFromVIN()">🔍 Generate from VIN</button>
-    </div>
-    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:12px;">— or enter manually —</p>
-    <div class="input-row">
-      <input type="text" id="m-year" placeholder="Year (e.g. 2018)" maxlength="4" style="max-width:120px;">
-      <input type="text" id="m-make" placeholder="Make (e.g. Toyota)">
-      <input type="text" id="m-model" placeholder="Model (e.g. Camry)">
-      <input type="text" id="m-engine" placeholder="Engine (e.g. 2.5L 4cyl)">
-      <input type="text" id="m-mileage" placeholder="Current mileage (miles)">
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="generateManual()">📋 Generate Checklist</button>
-      <button class="btn btn-secondary" onclick="clearAll()">🗑 Clear</button>
-    </div>
-    <div id="input-msg"></div>
-  </div>
-
-  <!-- Auth gate -->
-  <div id="gate-card" class="card hidden" style="text-align:center;">
-    <div style="font-size:2.5rem;margin-bottom:12px;">🔒</div>
-    <h2 style="justify-content:center;">Pro Feature</h2>
-    <p style="color:var(--text2);max-width:460px;margin:8px auto 20px;">Service Checklist is part of AutoFix Pro. Sign in and subscribe to unlock this feature.</p>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <a href="/" class="btn btn-primary">Go to Pricing</a>
-      <a href="/" class="btn btn-secondary">← Back to Dashboard</a>
+  <div class="card" id="setup-card">
+    <h2>📋 Service Checklist Generator <span style="background:var(--warning);color:#000;font-size:0.65rem;padding:2px 7px;border-radius:10px;font-weight:700;">PRO</span></h2>
+    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:14px;">Enter a VIN or fill in vehicle details. Tick completed jobs, add custom work, then print the job sheet.</p>
+    <div class="vin-area">
+      <div class="vin-row">
+        <input type="text" id="vin-input" placeholder="Enter 17-digit VIN for best results..." maxlength="17" oninput="this.value=this.value.toUpperCase()">
+        <button class="btn btn-primary" onclick="generateFromVIN()">🔍 Generate from VIN</button>
+      </div>
+      <div class="divider">— or enter manually —</div>
+      <div class="manual-grid">
+        <input type="text" id="m-year" placeholder="Year (e.g. 2018)">
+        <input type="text" id="m-make" placeholder="Make (e.g. Toyota)">
+        <input type="text" id="m-model" placeholder="Model (e.g. Camry)">
+        <input type="text" id="m-engine" placeholder="Engine (e.g. 2.5L 4-cyl)">
+        <input type="number" id="m-mileage" placeholder="Current mileage" style="grid-column:span 2;">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="generateManual()">📋 Generate Checklist</button>
+        <button class="btn btn-outline" onclick="clearAll()">🗑 Clear</button>
+      </div>
+      <div id="setup-msg"></div>
     </div>
   </div>
 
-  <!-- Checklist Output -->
-  <div id="checklist-output" class="hidden">
-    <!-- Vehicle summary -->
-    <div class="card" id="vehicle-summary"></div>
-    <!-- Progress -->
-    <div class="card" id="progress-card">
-      <h2><span>📊</span> Progress</h2>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
-      <div class="progress-label" id="progress-label">0 of 0 tasks complete · 0.0 hrs estimated</div>
-      <div class="action-bar">
-        <button class="btn btn-secondary" onclick="expandAll()">Expand All</button>
-        <button class="btn btn-secondary" onclick="collapseAll()">Collapse All</button>
-        <button class="btn btn-secondary" onclick="uncheckAll()">Uncheck All</button>
-        <button class="btn btn-primary" onclick="window.print()">🖨 Print Job Sheet</button>
-        <button class="btn btn-secondary" onclick="newChecklist()">+ New Checklist</button>
+  <div class="card" id="job-info-card" style="display:none;">
+    <h2>🧑‍🔧 Job Sheet Details</h2>
+    <div class="job-header-grid">
+      <input type="text" id="tech-name" placeholder="Technician / Mechanic name" oninput="updateLabour()">
+      <input type="text" id="customer-name" placeholder="Customer name" oninput="updateLabour()">
+      <input type="text" id="job-number" placeholder="Job / Work order number" oninput="updateLabour()">
+      <input type="text" id="job-date" placeholder="Date" oninput="updateLabour()">
+    </div>
+    <div class="rate-row">
+      <label>Hourly labour rate: $</label>
+      <input type="number" id="hourly-rate" value="85" min="0" step="5" oninput="updateLabour()">
+      <span style="color:var(--text2);font-size:0.85rem;">/hr</span>
+    </div>
+  </div>
+
+  <div class="card" id="vehicle-card" style="display:none;">
+    <h2>🚗 Vehicle</h2>
+    <div class="vehicle-grid" id="vehicle-grid"></div>
+    <div id="job-info-print" style="margin-top:14px;gap:0;flex-wrap:wrap;">
+      <div class="job-info-print-item"><div class="pil">Technician</div><div class="piv" id="print-tech">—</div></div>
+      <div class="job-info-print-item"><div class="pil">Customer</div><div class="piv" id="print-customer">—</div></div>
+      <div class="job-info-print-item"><div class="pil">Job No.</div><div class="piv" id="print-jobno">—</div></div>
+      <div class="job-info-print-item"><div class="pil">Date</div><div class="piv" id="print-date">—</div></div>
+    </div>
+  </div>
+
+  <div class="card" id="progress-card" style="display:none;">
+    <h2>📊 Progress &amp; Labour</h2>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-label"><span id="progress-text">0 of 0 tasks complete</span><span id="progress-pct">0%</span></div>
+    <div class="labour-summary">
+      <div><div class="labour-done-label">Labour Completed</div><div class="labour-done" id="labour-done">0.0 hrs</div></div>
+      <div class="labour-adjust-row"><label>+ Adjustment (hrs):</label><input type="number" id="labour-adjust" value="0" min="-10" step="0.5" oninput="updateLabour()"></div>
+      <div class="labour-total">Total: <strong id="labour-total-hrs">0.0 hrs</strong><br>Labour: <strong class="labour-cost-val" id="labour-cost-val">$0.00</strong></div>
+    </div>
+  </div>
+
+  <div class="action-bar" id="action-bar" style="display:none;">
+    <button class="btn btn-outline" onclick="expandAll()">Expand All</button>
+    <button class="btn btn-outline" onclick="collapseAll()">Collapse All</button>
+    <button class="btn btn-outline" onclick="uncheckAll()">Uncheck All</button>
+    <button class="btn btn-print" onclick="printSheet()">🖨 Print Job Sheet</button>
+    <button class="btn btn-outline" onclick="newChecklist()">+ New Checklist</button>
+  </div>
+
+  <div id="checklist-sections"></div>
+
+  <div id="global-add-job" style="display:none;margin-bottom:16px;">
+    <button class="btn btn-outline" onclick="toggleGlobalAddJob()" style="width:100%;border-style:dashed;padding:12px;">+ Add Custom Job to Any Section</button>
+    <div id="global-add-job-form" style="display:none;" class="card">
+      <h2>➕ Add Custom Job</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <input type="text" id="global-job-desc" placeholder="Job description (e.g. Replace rear wheel bearing)">
+        <input type="text" id="global-job-section" placeholder="Section name (e.g. Suspension, Engine) — leave blank for Custom Jobs">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="number" id="global-job-hrs" placeholder="Labour hrs" min="0" step="0.1" style="width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);">
+          <button class="btn btn-success" onclick="addGlobalCustomJob()">Add Job</button>
+          <button class="btn btn-outline" onclick="toggleGlobalAddJob()">Cancel</button>
+        </div>
       </div>
     </div>
-    <!-- Sections -->
-    <div id="checklist-sections"></div>
   </div>
-</main>
 
-<footer>
-  <p>AutoFix AI — Service Checklist Generator · Pro Feature · Data for reference only, always consult a certified technician</p>
-</footer>
+  <div id="print-footer">
+    <table style="width:100%;border-collapse:collapse;font-size:10pt;">
+      <tr>
+        <td style="padding:4px 8px 4px 0;"><strong>Technician:</strong> <span id="pf-tech">—</span></td>
+        <td style="padding:4px 8px;"><strong>Total Hours:</strong> <span id="pf-hrs">0.0</span> hrs</td>
+        <td style="padding:4px 8px;"><strong>Rate:</strong> $<span id="pf-rate">85</span>/hr</td>
+        <td style="padding:4px 0 4px 8px;text-align:right;"><strong>Labour Subtotal: $<span id="pf-cost">0.00</span></strong></td>
+      </tr>
+    </table>
+    <p style="font-size:8pt;color:#888;margin-top:6px;">Generated by AutoFix AI · autofixai.netlify.app · For reference only — always verify with manufacturer specifications</p>
+  </div>
+
+</main>
+<footer><p>AutoFix AI — Service Checklist Generator · Pro Feature · Data for reference only, always consult a certified technician</p></footer>
 
 <script>
-// ---- Auth gate ----
-(function checkAuth() {
-  try {
-    const raw = localStorage.getItem('gotrue.user');
-    if (!raw) { showGate(); return; }
-    const user = JSON.parse(raw);
-    const token = user?.token?.access_token;
-    if (!token) { showGate(); return; }
-    // Check subscription
-    fetch('/api/subscription', {
-      headers: {
-        'accept': 'application/json',
-        'Authorization': 'Bearer ' + token
-      }
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (!(data.active || data.subscribed || data.preview)) {
-        showGate();
-      }
-    })
-    .catch(() => {
-      // If API unreachable, allow access if user is logged in (fail open)
-    });
-  } catch(e) {
-    showGate();
-  }
-})();
-
-function showGate() {
-  document.getElementById('input-card').classList.add('hidden');
-  document.getElementById('gate-card').classList.remove('hidden');
-}
-
-// ---- Checklist data ----
 const CHECKLIST_SECTIONS = [
   {
     id: 'fluids', icon: '💧', name: 'Fluids & Filters',
@@ -301,207 +337,259 @@ const CHECKLIST_SECTIONS = [
   }
 ];
 
-let vehicleInfo = null;
-let checkedItems = {};
+let checkedItems = {}, customJobs = {}, currentVehicle = null;
 
-function generateFromVIN() {
+(async function checkAuth() {
+  try {
+    const r = await fetch('/.netlify/functions/subscription', { headers: { authorization: 'Bearer ' + (localStorage.getItem('sb-token') || '') } });
+    const d = await r.json();
+    if (!d?.active && !d?.subscribed && !d?.preview) {
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;font-family:sans-serif;background:#0d1117;color:#e6edf3;"><h2>AutoFix Pro Required</h2><p style="color:#8b949e;">The Service Checklist is a Pro feature.</p><a href="/" style="background:#e63946;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;">Go to Dashboard</a></div>';
+    }
+  } catch(e) {}
+})();
+
+async function generateFromVIN() {
   const vin = document.getElementById('vin-input').value.trim().toUpperCase();
-  if (vin.length !== 17) {
-    showMsg('error', '⚠️ Please enter a valid 17-character VIN.');
-    return;
-  }
-  showMsg('loading', '🔄 Decoding VIN...');
-  fetch('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/' + vin + '?format=json')
-    .then(r => r.json())
-    .then(d => {
-      const v = d.Results[0];
-      if (!v || !v.Make) throw new Error('No data');
-      vehicleInfo = {
-        vin: vin,
-        year: v.ModelYear,
-        make: v.Make,
-        model: v.Model,
-        engine: (v.DisplacementL ? v.DisplacementL + 'L ' : '') + (v.EngineCylinders ? v.EngineCylinders + '-cyl' : ''),
-        trim: v.Trim,
-        mileage: document.getElementById('m-mileage').value.trim() || ''
-      };
-      clearMsg();
-      renderChecklist();
-    })
-    .catch(() => showMsg('error', '❌ Could not decode VIN. Check the number and try again.'));
+  if (!vin || vin.length !== 17) { showMsg('setup-msg','error','Please enter a valid 17-digit VIN.'); return; }
+  showMsg('setup-msg','success','Looking up VIN...');
+  try {
+    const token = localStorage.getItem('sb-token') || '';
+    const res = await fetch('/api/vin?vin=' + vin, { headers: { authorization: 'Bearer ' + token } });
+    const json = await res.json();
+    if (json.error) { showMsg('setup-msg','error', json.error); return; }
+    const v = json.vehicle;
+    currentVehicle = { vin: v.vin||vin, year: v.year||'', make: v.make||'', model: v.model||'', engine: v.engine||'', mileage: '' };
+    clearMsg('setup-msg');
+    renderChecklist();
+  } catch(e) { showMsg('setup-msg','error','VIN lookup failed: ' + e.message); }
 }
 
 function generateManual() {
   const year = document.getElementById('m-year').value.trim();
   const make = document.getElementById('m-make').value.trim();
   const model = document.getElementById('m-model').value.trim();
-  if (!year || !make || !model) {
-    showMsg('error', '⚠️ Please enter at least Year, Make and Model.');
-    return;
-  }
-  vehicleInfo = {
-    vin: document.getElementById('vin-input').value.trim().toUpperCase() || '',
-    year, make, model,
-    engine: document.getElementById('m-engine').value.trim() || '',
-    mileage: document.getElementById('m-mileage').value.trim() || ''
-  };
-  clearMsg();
+  if (!year || !make || !model) { showMsg('setup-msg','error','Please enter at least Year, Make and Model.'); return; }
+  currentVehicle = { vin:'', year, make, model, engine: document.getElementById('m-engine').value.trim(), mileage: document.getElementById('m-mileage').value.trim() };
+  clearMsg('setup-msg');
   renderChecklist();
 }
 
 function renderChecklist() {
-  // Build vehicle summary
-  const vs = document.getElementById('vehicle-summary');
-  vs.innerHTML = '<h2><span>🚗</span> Vehicle</h2><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">' +
-    [
-      { l: 'Year', v: vehicleInfo.year },
-      { l: 'Make', v: vehicleInfo.make },
-      { l: 'Model', v: vehicleInfo.model },
-      { l: 'Engine', v: vehicleInfo.engine || 'N/A' },
-      { l: 'Mileage', v: vehicleInfo.mileage ? Number(vehicleInfo.mileage).toLocaleString() + ' mi' : 'N/A' },
-      { l: 'VIN', v: vehicleInfo.vin || 'N/A' },
-      { l: 'Date', v: new Date().toLocaleDateString() },
-    ].map(x => '<div class="meta-box"><div class="lbl">' + x.l + '</div><div class="val">' + x.v + '</div></div>').join('') +
-  '</div>';
-
-  // Build sections
-  checkedItems = {};
+  checkedItems = {}; customJobs = {};
+  const v = currentVehicle;
+  document.getElementById('vehicle-card').style.display = 'block';
+  document.getElementById('job-info-card').style.display = 'block';
+  document.getElementById('progress-card').style.display = 'block';
+  document.getElementById('action-bar').style.display = 'flex';
+  document.getElementById('global-add-job').style.display = 'block';
+  document.getElementById('setup-card').style.display = 'none';
+  document.getElementById('job-date').value = new Date().toLocaleDateString();
+  const vgrid = document.getElementById('vehicle-grid');
+  const fields = [{l:'Year',v:v.year||'N/A'},{l:'Make',v:v.make||'N/A'},{l:'Model',v:v.model||'N/A'},{l:'Engine',v:v.engine||'N/A'},{l:'Mileage',v:v.mileage?v.mileage+' mi':'N/A'},{l:'VIN',v:v.vin||'N/A'},{l:'Date',v:new Date().toLocaleDateString()}];
+  vgrid.innerHTML = fields.map(f => '<div class="vfield"><div class="vfield-label">'+f.l+'</div><div class="vfield-val">'+escH(f.v)+'</div></div>').join('');
   const container = document.getElementById('checklist-sections');
-  container.innerHTML = '';
-  CHECKLIST_SECTIONS.forEach(section => {
-    const sectionEl = document.createElement('div');
-    sectionEl.className = 'checklist-section';
-    const header = document.createElement('div');
-    header.className = 'section-header open';
-    header.innerHTML = '<h3>' + section.icon + ' ' + section.name + '</h3><div style="display:flex;align-items:center;gap:12px;"><span class="count" id="count-' + section.id + '">0 / ' + section.items.length + '</span><span class="toggle-icon">▶</span></div>';
-    header.onclick = function() {
-      this.classList.toggle('open');
-      const items = this.nextElementSibling;
-      items.classList.toggle('open');
-    };
-    const itemsEl = document.createElement('div');
-    itemsEl.className = 'checklist-items open';
-    section.items.forEach((item, idx) => {
-      const id = section.id + '_' + idx;
-      checkedItems[id] = false;
-      const row = document.createElement('div');
-      row.className = 'checklist-item';
-      row.id = 'row_' + id;
-      var cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.id = 'cb_' + id;
-      (function(capturedId, capturedSectionId) {
-        cb.addEventListener('change', function() { toggleItem(capturedId, capturedSectionId); });
-      })(id, section.id);
-      var labelDiv = document.createElement('div');
-      labelDiv.className = 'item-label';
-      var nameDiv = document.createElement('div');
-      nameDiv.className = 'item-name';
-      nameDiv.id = 'name_' + id;
-      nameDiv.textContent = item.name;
-      var noteDiv = document.createElement('div');
-      noteDiv.className = 'item-note';
-      noteDiv.textContent = item.note;
-      labelDiv.appendChild(nameDiv);
-      labelDiv.appendChild(noteDiv);
-      var labourDiv = document.createElement('div');
-      labourDiv.className = 'item-labour';
-      labourDiv.textContent = item.labour.toFixed(1) + ' hr';
-      row.appendChild(cb);
-      row.appendChild(labelDiv);
-      row.appendChild(labourDiv);
-      itemsEl.appendChild(row);
-    });
-    sectionEl.appendChild(header);
-    sectionEl.appendChild(itemsEl);
-    container.appendChild(sectionEl);
-  });
-
-  document.getElementById('checklist-output').classList.remove('hidden');
-  document.getElementById('input-card').style.display = 'none';
+  container.innerHTML = CHECKLIST_SECTIONS.map(sec => renderSection(sec)).join('');
   updateProgress();
 }
 
-function toggleItem(id, sectionId) {
-  const cb = document.getElementById('cb_' + id);
-  checkedItems[id] = cb.checked;
-  const nameEl = document.getElementById('name_' + id);
-  const row = document.getElementById('row_' + id);
-  if (cb.checked) {
-    nameEl.classList.add('strikethrough');
-    row.classList.add('done');
-  } else {
-    nameEl.classList.remove('strikethrough');
-    row.classList.remove('done');
-  }
-  updateProgress();
-  updateSectionCount(sectionId);
+function renderSection(sec) {
+  const items = sec.items.map((item, idx) => renderItem(sec.id, item, idx)).join('');
+  const customs = (customJobs[sec.id]||[]).map((cj,idx) => renderCustomItem(sec.id,idx,cj)).join('');
+  return `<div class="section-card" id="sec-${sec.id}" data-secid="${sec.id}">
+    <div class="section-header" onclick="toggleSection('${sec.id}')">
+      <div class="section-title">${sec.icon} ${escH(sec.title)}</div>
+      <div class="section-meta">
+        <span id="sec-count-${sec.id}">0 / ${sec.items.length}</span>
+        <span class="section-hrs" id="sec-hrs-${sec.id}">0.0 hrs done</span>
+        <span class="chevron">&#9660;</span>
+      </div>
+    </div>
+    <div class="section-items" id="items-${sec.id}">${items}${customs}
+      <div class="add-job-row" id="add-row-${sec.id}">
+        <input type="text" placeholder="Add custom job to this section..." id="add-desc-${sec.id}">
+        <input type="number" placeholder="hrs" class="hrs-input" id="add-hrs-${sec.id}" min="0" step="0.1">
+        <button class="btn btn-outline" onclick="addCustomJob('${sec.id}')">+ Add</button>
+      </div>
+    </div>
+  </div>`;
 }
 
-function updateSectionCount(sectionId) {
-  const section = CHECKLIST_SECTIONS.find(s => s.id === sectionId);
-  if (!section) return;
-  const done = section.items.filter((_, idx) => checkedItems[sectionId + '_' + idx]).length;
-  const el = document.getElementById('count-' + sectionId);
-  if (el) el.textContent = done + ' / ' + section.items.length;
+function renderItem(secId, item, idx) {
+  const id = secId+'_'+idx;
+  return `<div class="checklist-item" id="item-${id}">
+    <input type="checkbox" class="item-check" id="chk-${id}" onchange="toggleItem('${secId}',${idx})">
+    <div class="item-body"><div class="item-name">${escH(item.name)}</div>${item.note?'<div class="item-note">'+escH(item.note)+'</div>':''}</div>
+    <div class="item-hrs">${item.labour.toFixed(1)} hr</div>
+  </div>`;
+}
+
+function renderCustomItem(secId, idx, cj) {
+  const id = secId+'_custom_'+idx;
+  return `<div class="checklist-item custom-item" id="item-${id}">
+    <input type="checkbox" class="item-check" id="chk-${id}" onchange="toggleCustomItem('${secId}',${idx})">
+    <div class="item-body"><div class="item-name">★ ${escH(cj.desc)}</div><div class="item-note">Custom job</div></div>
+    <div class="item-hrs">${parseFloat(cj.hrs||0).toFixed(1)} hr</div>
+  </div>`;
+}
+
+function toggleItem(secId, idx) {
+  const id = secId+'_'+idx;
+  const chk = document.getElementById('chk-'+id);
+  checkedItems[id] = chk.checked;
+  const row = document.getElementById('item-'+id);
+  if (chk.checked) row.classList.add('done'); else row.classList.remove('done');
+  updateSectionCount(secId); updateProgress();
+}
+
+function toggleCustomItem(secId, idx) {
+  const id = secId+'_custom_'+idx;
+  const chk = document.getElementById('chk-'+id);
+  checkedItems[id] = chk.checked;
+  const row = document.getElementById('item-'+id);
+  if (chk.checked) row.classList.add('done'); else row.classList.remove('done');
+  updateSectionCount(secId); updateProgress();
+}
+
+function updateSectionCount(secId) {
+  const sec = CHECKLIST_SECTIONS.find(s => s.id === secId);
+  if (!sec) return;
+  const totalItems = sec.items.length + (customJobs[secId]||[]).length;
+  let done = 0, doneHrs = 0;
+  sec.items.forEach((item,idx) => { if (checkedItems[secId+'_'+idx]) { done++; doneHrs += item.labour; } });
+  (customJobs[secId]||[]).forEach((cj,idx) => { if (checkedItems[secId+'_custom_'+idx]) { done++; doneHrs += parseFloat(cj.hrs||0); } });
+  document.getElementById('sec-count-'+secId).textContent = done + ' / ' + totalItems;
+  document.getElementById('sec-hrs-'+secId).textContent = doneHrs.toFixed(1) + ' hrs done';
+  const card = document.getElementById('sec-'+secId);
+  if (done > 0) card.classList.add('has-done'); else card.classList.remove('has-done');
 }
 
 function updateProgress() {
-  const allItems = Object.keys(checkedItems);
-  const done = allItems.filter(k => checkedItems[k]).length;
-  const pct = allItems.length ? Math.round(done / allItems.length * 100) : 0;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  const totalLabour = CHECKLIST_SECTIONS.reduce((sum, sec) => {
-    return sum + sec.items.reduce((s2, item, idx) => s2 + (checkedItems[sec.id + '_' + idx] ? 0 : item.labour), 0);
-  }, 0);
-  document.getElementById('progress-label').textContent =
-    done + ' of ' + allItems.length + ' tasks complete · ' + totalLabour.toFixed(1) + ' hrs remaining';
+  let totalItems=0, doneCount=0, doneHrs=0;
+  CHECKLIST_SECTIONS.forEach(sec => {
+    totalItems += sec.items.length + (customJobs[sec.id]||[]).length;
+    sec.items.forEach((item,idx) => { if (checkedItems[sec.id+'_'+idx]) { doneCount++; doneHrs += item.labour; } });
+    (customJobs[sec.id]||[]).forEach((cj,idx) => { if (checkedItems[sec.id+'_custom_'+idx]) { doneCount++; doneHrs += parseFloat(cj.hrs||0); } });
+  });
+  const pct = totalItems ? Math.round(doneCount/totalItems*100) : 0;
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-text').textContent = doneCount+' of '+totalItems+' tasks complete';
+  document.getElementById('progress-pct').textContent = pct+'%';
+  updateLabour(doneHrs);
 }
 
-function expandAll() {
-  document.querySelectorAll('.section-header').forEach(h => h.classList.add('open'));
-  document.querySelectorAll('.checklist-items').forEach(i => i.classList.add('open'));
+function updateLabour(doneHrs) {
+  if (doneHrs === undefined) {
+    doneHrs = 0;
+    CHECKLIST_SECTIONS.forEach(sec => {
+      sec.items.forEach((item,idx) => { if (checkedItems[sec.id+'_'+idx]) doneHrs += item.labour; });
+      (customJobs[sec.id]||[]).forEach((cj,idx) => { if (checkedItems[sec.id+'_custom_'+idx]) doneHrs += parseFloat(cj.hrs||0); });
+    });
+  }
+  const adj = parseFloat(document.getElementById('labour-adjust')?.value||0)||0;
+  const rate = parseFloat(document.getElementById('hourly-rate')?.value||85)||85;
+  const total = Math.max(0, doneHrs + adj);
+  const cost = total * rate;
+  document.getElementById('labour-done').textContent = doneHrs.toFixed(1)+' hrs';
+  document.getElementById('labour-total-hrs').textContent = total.toFixed(1)+' hrs';
+  document.getElementById('labour-cost-val').textContent = '$'+cost.toFixed(2);
+  const tech = document.getElementById('tech-name')?.value||'—';
+  const cust = document.getElementById('customer-name')?.value||'—';
+  const jobno = document.getElementById('job-number')?.value||'—';
+  const date = document.getElementById('job-date')?.value||new Date().toLocaleDateString();
+  ['print-tech','pf-tech'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=tech; });
+  ['print-customer'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=cust; });
+  ['print-jobno'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=jobno; });
+  ['print-date'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=date; });
+  const pfH=document.getElementById('pf-hrs'); if(pfH) pfH.textContent=total.toFixed(1);
+  const pfR=document.getElementById('pf-rate'); if(pfR) pfR.textContent=rate.toFixed(0);
+  const pfC=document.getElementById('pf-cost'); if(pfC) pfC.textContent=cost.toFixed(2);
 }
-function collapseAll() {
-  document.querySelectorAll('.section-header').forEach(h => h.classList.remove('open'));
-  document.querySelectorAll('.checklist-items').forEach(i => i.classList.remove('open'));
+
+function addCustomJob(secId) {
+  const descEl=document.getElementById('add-desc-'+secId);
+  const hrsEl=document.getElementById('add-hrs-'+secId);
+  const desc=descEl.value.trim();
+  const hrs=parseFloat(hrsEl.value)||0;
+  if (!desc) { descEl.focus(); return; }
+  if (!customJobs[secId]) customJobs[secId]=[];
+  const idx=customJobs[secId].length;
+  customJobs[secId].push({desc,hrs});
+  descEl.value=''; hrsEl.value='';
+  const addRow=document.getElementById('add-row-'+secId);
+  const div=document.createElement('div');
+  div.innerHTML=renderCustomItem(secId,idx,{desc,hrs});
+  addRow.parentNode.insertBefore(div.firstElementChild,addRow);
+  updateSectionCount(secId); updateProgress();
 }
+
+function toggleGlobalAddJob() {
+  const f=document.getElementById('global-add-job-form');
+  f.style.display = f.style.display==='none' ? 'block' : 'none';
+}
+
+function addGlobalCustomJob() {
+  const desc=document.getElementById('global-job-desc').value.trim();
+  const secName=(document.getElementById('global-job-section').value.trim()||'Custom Jobs');
+  const hrs=parseFloat(document.getElementById('global-job-hrs').value)||0;
+  if (!desc) { document.getElementById('global-job-desc').focus(); return; }
+  let secId='custom_sec_'+secName.toLowerCase().replace(/[^a-z0-9]/g,'_');
+  let secEl=document.getElementById('sec-'+secId);
+  if (!secEl) {
+    if (!customJobs[secId]) customJobs[secId]=[];
+    const fakeSection={id:secId,icon:'⚙️',title:secName,items:[]};
+    CHECKLIST_SECTIONS.push(fakeSection);
+    const container=document.getElementById('checklist-sections');
+    const d=document.createElement('div');
+    d.innerHTML=renderSection(fakeSection);
+    container.appendChild(d.firstElementChild);
+  }
+  if (!customJobs[secId]) customJobs[secId]=[];
+  const idx=customJobs[secId].length;
+  customJobs[secId].push({desc,hrs});
+  const addRow=document.getElementById('add-row-'+secId);
+  const d=document.createElement('div');
+  d.innerHTML=renderCustomItem(secId,idx,{desc,hrs});
+  addRow.parentNode.insertBefore(d.firstElementChild,addRow);
+  document.getElementById('global-job-desc').value='';
+  document.getElementById('global-job-section').value='';
+  document.getElementById('global-job-hrs').value='';
+  document.getElementById('global-add-job-form').style.display='none';
+  updateSectionCount(secId); updateProgress();
+}
+
+function toggleSection(secId) { document.getElementById('sec-'+secId).classList.toggle('collapsed'); }
+function expandAll() { document.querySelectorAll('.section-card').forEach(c=>c.classList.remove('collapsed')); }
+function collapseAll() { document.querySelectorAll('.section-card').forEach(c=>c.classList.add('collapsed')); }
 function uncheckAll() {
-  Object.keys(checkedItems).forEach(id => {
-    checkedItems[id] = false;
-    const cb = document.getElementById('cb_' + id);
-    if (cb) cb.checked = false;
-    const nameEl = document.getElementById('name_' + id);
-    if (nameEl) nameEl.classList.remove('strikethrough');
-    const row = document.getElementById('row_' + id);
-    if (row) row.classList.remove('done');
-  });
-  CHECKLIST_SECTIONS.forEach(s => updateSectionCount(s.id));
+  checkedItems={};
+  document.querySelectorAll('.item-check').forEach(c=>{c.checked=false;});
+  document.querySelectorAll('.checklist-item').forEach(r=>r.classList.remove('done'));
+  CHECKLIST_SECTIONS.forEach(sec=>updateSectionCount(sec.id));
   updateProgress();
 }
+function printSheet() { updateLabour(); window.print(); }
 function newChecklist() {
-  document.getElementById('checklist-output').classList.add('hidden');
-  document.getElementById('input-card').style.display = '';
-  document.getElementById('vin-input').value = '';
-  ['m-year','m-make','m-model','m-engine','m-mileage'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  vehicleInfo = null;
+  currentVehicle=null; checkedItems={}; customJobs={};
+  // Remove dynamically added sections
+  CHECKLIST_SECTIONS = CHECKLIST_SECTIONS.filter(s => !s.id.startsWith('custom_sec_'));
+  document.getElementById('setup-card').style.display='block';
+  document.getElementById('vehicle-card').style.display='none';
+  document.getElementById('job-info-card').style.display='none';
+  document.getElementById('progress-card').style.display='none';
+  document.getElementById('action-bar').style.display='none';
+  document.getElementById('global-add-job').style.display='none';
+  document.getElementById('checklist-sections').innerHTML='';
+  document.getElementById('vin-input').value='';
 }
 function clearAll() {
-  document.getElementById('vin-input').value = '';
-  ['m-year','m-make','m-model','m-engine','m-mileage'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  clearMsg();
+  document.getElementById('vin-input').value='';
+  ['m-year','m-make','m-model','m-engine','m-mileage'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  clearMsg('setup-msg');
 }
-function showMsg(type, text) {
-  const el = document.getElementById('input-msg');
-  el.innerHTML = '<div class="' + (type === 'error' ? 'error-msg' : type === 'loading' ? 'loading' : 'success-msg') + '">' + text + '</div>';
-}
-function clearMsg() {
-  document.getElementById('input-msg').innerHTML = '';
-}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showMsg(id,type,text){const el=document.getElementById(id);if(el)el.innerHTML='<div class="msg '+type+'">'+text+'</div>';}
+function clearMsg(id){const el=document.getElementById(id);if(el)el.innerHTML='';}
 </script>
 </body>
 </html>
