@@ -28,7 +28,7 @@ export default async (req: Request, context: Context) => {
     plan: active ? 'pro' : 'free',
     stripe_customer_id: sub?.stripe_customer_id ?? null,
     stripe_subscription_id: sub?.stripe_subscription_id ?? null,
-    stripe_status: sub?.stripe_status ?? null,
+    stripe_status: sub?.status ?? null,
     period_end: sub?.current_period_end ?? null,
   })
 }
