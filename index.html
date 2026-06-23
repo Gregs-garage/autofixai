@@ -265,10 +265,10 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
     <h2><span class="icon">⚠️</span> <span data-en="OBD-II Fault Code Lookup" data-es="Búsqueda de Códigos OBD-II">OBD-II Fault Code Lookup</span></h2>
     <p style="color:var(--text2);font-size:0.85rem;margin-bottom:12px;" data-en="Enter up to 4 codes for combined AI diagnosis — identifies common repairs for codes that appear together" data-es="Ingresa hasta 4 códigos para diagnóstico IA combinado — identifica reparaciones comunes para códigos que aparecen juntos">Enter up to 4 codes for combined AI diagnosis — identifies common repairs for codes that appear together</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:12px;">
-      <input type="text" id="dtc-input-1" maxlength="12" placeholder="Code 1 (required)" data-en-placeholder="Code 1 (required)" data-es-placeholder="Código 1 (obligatorio)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
-      <input type="text" id="dtc-input-2" maxlength="12" placeholder="Code 2 (optional)" data-en-placeholder="Code 2 (optional)" data-es-placeholder="Código 2 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
-      <input type="text" id="dtc-input-3" maxlength="12" placeholder="Code 3 (optional)" data-en-placeholder="Code 3 (optional)" data-es-placeholder="Código 3 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
-      <input type="text" id="dtc-input-4" maxlength="12" placeholder="Code 4 (optional)" data-en-placeholder="Code 4 (optional)" data-es-placeholder="Código 4 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
+      <input type="text" id="dtc-input-1" maxlength="12" oninput="this.value=this.value.toUpperCase()" placeholder="Code 1 (required)" data-en-placeholder="Code 1 (required)" data-es-placeholder="Código 1 (obligatorio)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
+      <input type="text" id="dtc-input-2" maxlength="12" oninput="this.value=this.value.toUpperCase()" placeholder="Code 2 (optional)" data-en-placeholder="Code 2 (optional)" data-es-placeholder="Código 2 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
+      <input type="text" id="dtc-input-3" maxlength="12" oninput="this.value=this.value.toUpperCase()" placeholder="Code 3 (optional)" data-en-placeholder="Code 3 (optional)" data-es-placeholder="Código 3 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
+      <input type="text" id="dtc-input-4" maxlength="12" oninput="this.value=this.value.toUpperCase()" placeholder="Code 4 (optional)" data-en-placeholder="Code 4 (optional)" data-es-placeholder="Código 4 (opcional)" style="text-transform:uppercase;font-family:monospace;font-size:1rem;">
     </div>
     <button class="btn btn-primary" onclick="lookupDTC()" style="width:100%;font-size:1.05rem;padding:12px;"><span data-en="🔍 Diagnose Codes" data-es="🔍 Diagnosticar Códigos">🔍 Diagnose Codes</span></button>
     <p style="color:var(--text2);font-size:0.82rem;margin-top:8px;" data-en="Supports P, B, C, U codes — generic and manufacturer-specific" data-es="Compatible con códigos P, B, C, U — genéricos y específicos del fabricante">Supports P, B, C, U codes — generic and manufacturer-specific</p>
@@ -480,7 +480,17 @@ async function loadModels() {
   }
 }
 
-function loadTrims() {}
+async function loadTrims() {
+  // NHTSA does not provide trim-level data via public API
+  // Trim selection is handled via VIN decode (recommended) or model selector
+  const make = document.getElementById('sel-make')?.value;
+  const model = document.getElementById('sel-model')?.value;
+  const year = document.getElementById('sel-year')?.value;
+  if (year && make && model) {
+    // Auto-trigger lookup when all three fields are selected
+    await lookupBySelector();
+  }
+}
 
 async function decodeVIN() {
   const vin = document.getElementById('vin-input').value.trim().toUpperCase();
@@ -539,34 +549,37 @@ function renderSpecs(v) {
   const card = document.getElementById('specs-card');
   const grid = document.getElementById('specs-result');
   card.style.display = 'block';
+  const en = currentLang === 'en';
+  const ok = x => x !== null && x !== undefined && x !== '' && x !== '0' && x !== 'Not Applicable';
   const specs = [
-    {lbl: currentLang==='en'?'Engine Displacement':'Cilindrada', val: v.DisplacementL ? v.DisplacementL + ' L' : 'N/A'},
-    {lbl: currentLang==='en'?'Cylinders':'Cilindros', val: v.EngineCylinders || 'N/A'},
-    {lbl: currentLang==='en'?'Engine Config':'Config. Motor', val: v.EngineConfiguration || 'N/A'},
-    {lbl: currentLang==='en'?'Valve Config':'Config. Válvulas', val: v.ValveTrainDesign || 'N/A'},
-    {lbl: currentLang==='en'?'Fuel Injection':'Inyección', val: v.FuelInjectionType || 'N/A'},
-    {lbl: currentLang==='en'?'Turbo':'Turbo', val: v.Turbo || 'N/A'},
-    {lbl: currentLang==='en'?'Displacement (cc)':'Cilindrada (cc)', val: v.DisplacementCC ? Math.round(v.DisplacementCC) + ' cc' : 'N/A'},
-    {lbl: currentLang==='en'?'Displacement (ci)':'Cilindrada (ci)', val: v.DisplacementCI ? Math.round(v.DisplacementCI) + ' ci' : 'N/A'},
-    {lbl: currentLang==='en'?'Drive Type':'Tracción', val: v.DriveType || 'N/A'},
-    {lbl: currentLang==='en'?'Transmission':'Transmisión', val: v.TransmissionStyle || 'N/A'},
-    {lbl: currentLang==='en'?'# of Gears':'# de Marchas', val: v.TransmissionSpeeds || 'N/A'},
-    {lbl: currentLang==='en'?'GVWR Class':'Clase GVWR', val: v.GVWR || 'N/A'},
-  ];
-  grid.innerHTML = specs.filter(s => s.val && s.val !== 'N/A').map(s => '<div class="spec-box"><div class="val">' + s.val + '</div><div class="lbl">' + s.lbl + '</div></div>').join('');
-}
-
-async function lookupBySelector() {
-  const year = document.getElementById('sel-year').value;
-  const make = document.getElementById('sel-make').value;
-  const model = document.getElementById('sel-model').value;
-  if (!year || !make || !model) {
-    document.getElementById('vin-result').innerHTML = '<div class="error-msg">' + (currentLang==='en'?'⚠️ Please select Year, Make and Model.':'⚠️ Por favor selecciona Año, Marca y Modelo.') + '</div>';
-    return;
-  }
-  currentVehicle = { year, make, model, engine: '' };
-  document.getElementById('vin-result').innerHTML = '<div class="result-box"><h3 style="color:var(--success);">✅ ' + year + ' ' + make + ' ' + model + '</h3><p style="color:var(--text2);margin-top:8px;">' + (currentLang==='en'?'Enter a VIN for full specifications.':'Ingresa un VIN para especificaciones completas.') + '</p><div style="margin-top:14px;"><button class="btn btn-secondary" onclick="checkRecallsFromVIN()">' + (currentLang==='en'?'📋 Check Recalls':'📋 Ver Recalls') + '</button></div></div>';
-  document.getElementById('specs-card').style.display = 'none';
+    { lbl: en?'Horsepower':'Potencia (CV)', val: ok(v.EngineHP) ? v.EngineHP + ' HP' : null },
+    { lbl: en?'Engine':'Motor', val: ok(v.DisplacementL) ? v.DisplacementL+'L '+(ok(v.EngineCylinders)?v.EngineCylinders+'-cyl':'') : null },
+    { lbl: en?'Engine Config':'Configuración', val: ok(v.EngineConfiguration) ? v.EngineConfiguration : null },
+    { lbl: en?'Valve Train':'Distribución', val: ok(v.ValveTrainDesign) ? v.ValveTrainDesign : null },
+    { lbl: en?'Fuel Injection':'Inyección', val: ok(v.FuelInjectionType) ? v.FuelInjectionType : null },
+    { lbl: en?'Turbo':'Turbo', val: ok(v.Turbo) ? v.Turbo : null },
+    { lbl: en?'Drive Type':'Tracción', val: ok(v.DriveType) ? v.DriveType : null },
+    { lbl: en?'Transmission':'Transmisión', val: ok(v.TransmissionStyle) ? (ok(v.TransmissionSpeeds)?v.TransmissionSpeeds+'-spd ':'')+v.TransmissionStyle : null },
+    { lbl: en?'Wheelbase':'Distancia Ejes', val: ok(v.WheelBaseShort) ? v.WheelBaseShort+' in' : null },
+    { lbl: en?'Wheel Size (F/R)':'Ruedas (D/T)', val: (ok(v.WheelSizeFront)||ok(v.WheelSizeRear)) ? (v.WheelSizeFront||'?')+'"/'+(v.WheelSizeRear||'?')+'"' : null },
+    { lbl: en?'Seats':'Asientos', val: ok(v.Seats) ? v.Seats+' seats' : null },
+    { lbl: en?'Doors':'Puertas', val: ok(v.Doors) ? v.Doors+' doors' : null },
+    { lbl: en?'Body Style':'Carrocería', val: ok(v.BodyClass) ? v.BodyClass : null },
+    { lbl: en?'GVWR':'Peso Bruto (GVWR)', val: ok(v.GVWR) ? v.GVWR : null },
+    { lbl: en?'Base MSRP':'Precio Base', val: ok(v.BasePrice) ? '$'+parseFloat(v.BasePrice).toLocaleString() : null },
+    { lbl: en?'ABS':'ABS', val: ok(v.ABS) ? v.ABS : null },
+    { lbl: en?'Stability Control (ESC)':'Control Estabilidad', val: ok(v.ESC) ? v.ESC : null },
+    { lbl: en?'Traction Control':'Control Tracción', val: ok(v.TractionControl) ? v.TractionControl : null },
+    { lbl: en?'Lane Departure Warning':'Aviso Cambio Carril', val: ok(v.LaneDepartureWarning) ? v.LaneDepartureWarning : null },
+    { lbl: en?'Forward Collision Warning':'Aviso Colisión Frontal', val: ok(v.ForwardCollisionWarning) ? v.ForwardCollisionWarning : null },
+    { lbl: en?'Blind Spot Monitor':'Monitor Ángulo Muerto', val: ok(v.BlindSpotMon) ? v.BlindSpotMon : null },
+    { lbl: en?'Park Assist':'Asistencia Aparcamiento', val: ok(v.ParkAssist) ? v.ParkAssist : null },
+    { lbl: en?'Daytime Running Lights':'Luces Diurnas', val: ok(v.DaytimeRunningLight) ? v.DaytimeRunningLight : null },
+  ].filter(s => s.val !== null);
+  if (specs.length === 0) { card.style.display = 'none'; return; }
+  grid.innerHTML = specs.map(s =>
+    '<div class="spec-item"><span class="spec-lbl">'+escapeHtml(s.lbl)+'</span><span class="spec-val">'+escapeHtml(String(s.val))+'</span></div>'
+  ).join('');
 }
 
 function saveCurrentVehicle() {
