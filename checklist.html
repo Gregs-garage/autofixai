@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Service Checklist — AutoFix AI</title>
+<title>Service Checklist â AutoFix AI</title>
 <style>
 :root {
   --primary:#e63946;--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;
@@ -65,7 +65,7 @@ input::placeholder{color:var(--text2);}
 .checklist-item.done{background:var(--done-bg);border-left:3px solid var(--done-border);}
 .checklist-item.done .item-name{color:var(--success);font-weight:600;}
 .checklist-item.done .item-note{color:rgba(63,185,80,0.65);}
-.checklist-item.done .item-hrs{color:var(--success);font-weight:700;}
+.checklist-item.done .item-hrs-input{width:52px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);font-weight:700;font-size:0.82rem;border-radius:4px;padding:2px 4px;text-align:center;-moz-appearance:textfield;}.item-hrs-input::-webkit-inner-spin-button,.item-hrs-input::-webkit-outer-spin-button{-webkit-appearance:none;}
 .item-check{width:18px;height:18px;cursor:pointer;accent-color:var(--success);flex-shrink:0;margin-top:2px;}
 .item-body{flex:1;}
 .item-name{font-size:0.9rem;font-weight:500;}
@@ -122,19 +122,19 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
 </head>
 <body>
 <header>
-  <div class="logo"><div class="logo-icon">🔧</div><span>AutoFix <strong>AI</strong></span></div>
-  <a href="/" class="back-btn">← Back to Dashboard</a>
+  <div class="logo"><div class="logo-icon">ð§</div><span>AutoFix <strong>AI</strong></span></div>
+  <a href="/" class="back-btn">â Back to Dashboard</a>
 </header>
 <main>
   <div class="card" id="setup-card">
-    <h2>📋 Service Checklist Generator <span style="background:var(--warning);color:#000;font-size:0.65rem;padding:2px 7px;border-radius:10px;font-weight:700;">PRO</span></h2>
+    <h2>ð Service Checklist Generator <span style="background:var(--warning);color:#000;font-size:0.65rem;padding:2px 7px;border-radius:10px;font-weight:700;">PRO</span></h2>
     <p style="color:var(--text2);font-size:0.85rem;margin-bottom:14px;">Enter a VIN or fill in vehicle details. Tick completed jobs, add custom work, then print the job sheet.</p>
     <div class="vin-area">
       <div class="vin-row">
         <input type="text" id="vin-input" placeholder="Enter 17-digit VIN for best results..." maxlength="17" oninput="this.value=this.value.toUpperCase()">
-        <button class="btn btn-primary" onclick="generateFromVIN()">🔍 Generate from VIN</button>
+        <button class="btn btn-primary" onclick="generateFromVIN()">ð Generate from VIN</button>
       </div>
-      <div class="divider">— or enter manually —</div>
+      <div class="divider">â or enter manually â</div>
       <div class="manual-grid">
         <input type="text" id="m-year" placeholder="Year (e.g. 2018)">
         <input type="text" id="m-make" placeholder="Make (e.g. Toyota)">
@@ -143,15 +143,15 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
         <input type="number" id="m-mileage" placeholder="Current mileage" style="grid-column:span 2;">
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="generateManual()">📋 Generate Checklist</button>
-        <button class="btn btn-outline" onclick="clearAll()">🗑 Clear</button>
+        <button class="btn btn-primary" onclick="generateManual()">ð Generate Checklist</button>
+        <button class="btn btn-outline" onclick="clearAll()">ð Clear</button>
       </div>
       <div id="setup-msg"></div>
     </div>
   </div>
 
   <div class="card" id="job-info-card" style="display:none;">
-    <h2>🧑‍🔧 Job Sheet Details</h2>
+    <h2>ð§âð§ Job Sheet Details</h2>
     <div class="job-header-grid">
       <input type="text" id="tech-name" placeholder="Technician / Mechanic name" oninput="updateLabour()">
       <input type="text" id="customer-name" placeholder="Customer name" oninput="updateLabour()">
@@ -166,18 +166,18 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
   </div>
 
   <div class="card" id="vehicle-card" style="display:none;">
-    <h2>🚗 Vehicle</h2>
+    <h2>ð Vehicle</h2>
     <div class="vehicle-grid" id="vehicle-grid"></div>
     <div id="job-info-print" style="margin-top:14px;gap:0;flex-wrap:wrap;">
-      <div class="job-info-print-item"><div class="pil">Technician</div><div class="piv" id="print-tech">—</div></div>
-      <div class="job-info-print-item"><div class="pil">Customer</div><div class="piv" id="print-customer">—</div></div>
-      <div class="job-info-print-item"><div class="pil">Job No.</div><div class="piv" id="print-jobno">—</div></div>
-      <div class="job-info-print-item"><div class="pil">Date</div><div class="piv" id="print-date">—</div></div>
+      <div class="job-info-print-item"><div class="pil">Technician</div><div class="piv" id="print-tech">â</div></div>
+      <div class="job-info-print-item"><div class="pil">Customer</div><div class="piv" id="print-customer">â</div></div>
+      <div class="job-info-print-item"><div class="pil">Job No.</div><div class="piv" id="print-jobno">â</div></div>
+      <div class="job-info-print-item"><div class="pil">Date</div><div class="piv" id="print-date">â</div></div>
     </div>
   </div>
 
   <div class="card" id="progress-card" style="display:none;">
-    <h2>📊 Progress &amp; Labour</h2>
+    <h2>ð Progress &amp; Labour</h2>
     <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
     <div class="progress-label"><span id="progress-text">0 of 0 tasks complete</span><span id="progress-pct">0%</span></div>
     <div class="labour-summary">
@@ -191,7 +191,7 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
     <button class="btn btn-outline" onclick="expandAll()">Expand All</button>
     <button class="btn btn-outline" onclick="collapseAll()">Collapse All</button>
     <button class="btn btn-outline" onclick="uncheckAll()">Uncheck All</button>
-    <button class="btn btn-print" onclick="printSheet()">🖨 Print Job Sheet</button>
+    <button class="btn btn-print" onclick="printSheet()">ð¨ Print Job Sheet</button>
     <button class="btn btn-outline" onclick="newChecklist()">+ New Checklist</button>
   </div>
 
@@ -200,10 +200,10 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
   <div id="global-add-job" style="display:none;margin-bottom:16px;">
     <button class="btn btn-outline" onclick="toggleGlobalAddJob()" style="width:100%;border-style:dashed;padding:12px;">+ Add Custom Job to Any Section</button>
     <div id="global-add-job-form" style="display:none;" class="card">
-      <h2>➕ Add Custom Job</h2>
+      <h2>â Add Custom Job</h2>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <input type="text" id="global-job-desc" placeholder="Job description (e.g. Replace rear wheel bearing)">
-        <input type="text" id="global-job-section" placeholder="Section name (e.g. Suspension, Engine) — leave blank for Custom Jobs">
+        <input type="text" id="global-job-section" placeholder="Section name (e.g. Suspension, Engine) â leave blank for Custom Jobs">
         <div style="display:flex;gap:8px;align-items:center;">
           <input type="number" id="global-job-hrs" placeholder="Labour hrs" min="0" step="0.1" style="width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);">
           <button class="btn btn-success" onclick="addGlobalCustomJob()">Add Job</button>
@@ -216,123 +216,212 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
   <div id="print-footer">
     <table style="width:100%;border-collapse:collapse;font-size:10pt;">
       <tr>
-        <td style="padding:4px 8px 4px 0;"><strong>Technician:</strong> <span id="pf-tech">—</span></td>
+        <td style="padding:4px 8px 4px 0;"><strong>Technician:</strong> <span id="pf-tech">â</span></td>
         <td style="padding:4px 8px;"><strong>Total Hours:</strong> <span id="pf-hrs">0.0</span> hrs</td>
         <td style="padding:4px 8px;"><strong>Rate:</strong> $<span id="pf-rate">85</span>/hr</td>
         <td style="padding:4px 0 4px 8px;text-align:right;"><strong>Labour Subtotal: $<span id="pf-cost">0.00</span></strong></td>
       </tr>
     </table>
-    <p style="font-size:8pt;color:#888;margin-top:6px;">Generated by AutoFix AI · autofixai.netlify.app · For reference only — always verify with manufacturer specifications</p>
+    <p style="font-size:8pt;color:#888;margin-top:6px;">Generated by AutoFix AI Â· autofixai.netlify.app Â· For reference only â always verify with manufacturer specifications</p>
   </div>
 
 </main>
-<footer><p>AutoFix AI — Service Checklist Generator · Pro Feature · Data for reference only, always consult a certified technician</p></footer>
+<footer><p>AutoFix AI â Service Checklist Generator Â· Pro Feature Â· Data for reference only, always consult a certified technician</p></footer>
 
 <script>
 const CHECKLIST_SECTIONS = [
   {
     id: 'fluids', icon: '💧', name: 'Fluids & Filters',
     items: [
-      { name: 'Engine Oil & Filter', note: 'Check level, colour and change interval', labour: 0.5 },
-      { name: 'Coolant / Antifreeze Level', note: 'Check reservoir and radiator cap condition', labour: 0.2 },
-      { name: 'Brake Fluid Level & Condition', note: 'Check DOT rating, moisture content and reservoir level', labour: 0.2 },
-      { name: 'Power Steering Fluid', note: 'Check level and condition (if hydraulic)', labour: 0.1 },
-      { name: 'Transmission Fluid', note: 'Check level, colour and smell (auto & manual)', labour: 0.3 },
-      { name: 'Differential / Transfer Case Fluid', note: 'Check for leaks and correct level (4WD/AWD)', labour: 0.3 },
-      { name: 'Windshield Washer Fluid', note: 'Refill as needed', labour: 0.1 },
-      { name: 'Air Filter (Engine)', note: 'Inspect element; replace if dirty or due by interval', labour: 0.3 },
-      { name: 'Cabin Air Filter', note: 'Inspect and replace if blocked or odorous', labour: 0.3 },
-      { name: 'Fuel Filter', note: 'Check service interval; replace if due', labour: 0.5 },
+      { name: 'Engine Oil & Filter', note: 'Check level, colour and change interval; note grade and capacity' },
+      { name: 'Coolant / Antifreeze', note: 'Check reservoir level and freeze point; inspect radiator cap condition' },
+      { name: 'Brake Fluid', note: 'Check DOT rating, moisture content and reservoir level' },
+      { name: 'Power Steering Fluid', note: 'Check level and condition (hydraulic systems only)' },
+      { name: 'Transmission Fluid (Auto)', note: 'Check level, colour and smell; note service interval' },
+      { name: 'Transmission Fluid (Manual)', note: 'Check level via fill plug; inspect for metal contamination' },
+      { name: 'Transfer Case Fluid', note: 'Check level and condition (4WD/AWD vehicles)' },
+      { name: 'Front Differential Fluid', note: 'Check level and condition; inspect for leaks' },
+      { name: 'Rear Differential Fluid', note: 'Check level and condition; inspect for leaks' },
+      { name: 'Windshield Washer Fluid', note: 'Fill to maximum; check jet spray pattern and heating element' },
+      { name: 'Air Filter (Engine)', note: 'Inspect element condition; replace if dirty, clogged or overdue' },
+      { name: 'Cabin Air Filter', note: 'Inspect and replace if blocked, odorous or due by mileage' },
+      { name: 'Fuel Filter', note: 'Check service interval; replace if due (inline or in-tank)' },
+      { name: 'Oil Cooler Lines', note: 'Inspect for leaks, cracks or deterioration at fittings' },
+      { name: 'Hydraulic Clutch Fluid', note: 'Check reservoir level and condition (if hydraulic clutch equipped)' }
     ]
   },
   {
     id: 'brakes', icon: '🛑', name: 'Brakes',
     items: [
-      { name: 'Front Brake Pads', note: 'Measure thickness — minimum 3mm; check for uneven wear', labour: 0.5 },
-      { name: 'Rear Brake Pads / Shoes', note: 'Measure thickness — minimum 2mm (drum shoes: 1.5mm)', labour: 0.5 },
-      { name: 'Front Brake Rotors / Drums', note: 'Measure thickness and check for scoring or cracks', labour: 0.3 },
-      { name: 'Rear Brake Rotors / Drums', note: 'Measure thickness and check for scoring or heat cracks', labour: 0.3 },
-      { name: 'Brake Callipers', note: 'Inspect for leaks, binding or seized guide pins', labour: 0.4 },
-      { name: 'Brake Lines & Hoses', note: 'Inspect for cracks, corrosion or swelling', labour: 0.3 },
-      { name: 'Parking / Emergency Brake', note: 'Test hold on incline; adjust cable tension if needed', labour: 0.3 },
-      { name: 'ABS / Brake Warning Light', note: 'Verify no active fault codes', labour: 0.2 },
+      { name: 'Front Brake Pads', note: 'Measure pad thickness — minimum 3mm; check for uneven or tapered wear' },
+      { name: 'Rear Brake Pads', note: 'Measure pad thickness — minimum 3mm; check for glazing or cracking' },
+      { name: 'Rear Brake Shoes', note: 'Measure lining thickness — minimum 1.5mm; check for contamination' },
+      { name: 'Front Brake Rotors / Discs', note: 'Measure thickness and runout; check for scoring, heat cracks or bluing' },
+      { name: 'Rear Brake Rotors / Discs', note: 'Measure thickness and runout; check for scoring or heat cracks' },
+      { name: 'Brake Drums', note: 'Measure internal diameter; check for scoring, cracks or out-of-round' },
+      { name: 'Front Brake Callipers', note: 'Inspect for leaks, binding, seized guide pins and dust boot condition' },
+      { name: 'Rear Brake Callipers', note: 'Inspect for leaks, binding, seized pins and integrated handbrake mechanism' },
+      { name: 'Brake Lines & Hard Pipes', note: 'Inspect for corrosion, cracks, dents or crimped sections along full length' },
+      { name: 'Flexible Brake Hoses', note: 'Inspect for cracking, swelling, chafing or collapse under pressure' },
+      { name: 'Brake Master Cylinder', note: 'Inspect for leaks at pushrod seal and reservoir; check mounting bolts' },
+      { name: 'Brake Servo / Booster', note: 'Check vacuum or hydraulic assist operation; test pedal feel under load' },
+      { name: 'Parking / Handbrake', note: 'Test hold on incline; adjust cable tension or electronic actuator if needed' },
+      { name: 'ABS Module & Wheel Speed Sensors', note: 'Verify no active ABS fault codes; check wheel speed sensor wiring' },
+      { name: 'Electronic Parking Brake (EPB)', note: 'Test apply and release; check actuator motor function and calibration' }
     ]
   },
   {
     id: 'tyres', icon: '🔵', name: 'Tyres & Wheels',
     items: [
-      { name: 'Tyre Tread Depth (all four)', note: 'Minimum legal 1.6mm — replace at or before 2mm', labour: 0.3 },
-      { name: 'Tyre Pressure (all four + spare)', note: 'Inflate to door placard spec when cold', labour: 0.2 },
-      { name: 'Tyre Condition & Sidewalls', note: 'Check for bulges, cuts, cracking or embedded objects', labour: 0.3 },
-      { name: 'Wheel Torque', note: 'Torque lug nuts to manufacturer spec after any wheel removal', labour: 0.3 },
-      { name: 'Tyre Rotation', note: 'Rotate every 5,000–7,500 miles or per schedule', labour: 0.5 },
-      { name: 'Wheel Alignment Check', note: 'Check for uneven tyre wear patterns; align if needed', labour: 0.5 },
-      { name: 'Wheel Balance', note: 'Balance all four if vibration present', labour: 0.8 },
-      { name: 'TPMS Sensors', note: 'Verify TPMS light is off; re-learn after rotation if needed', labour: 0.2 },
+      { name: 'Tyre Tread Depth (All 4)', note: 'Measure all four corners — minimum legal 1.6mm; advise replacement at 2mm' },
+      { name: 'Spare Tyre Tread & Condition', note: 'Check tread depth, sidewall condition and inflation of spare' },
+      { name: 'Tyre Pressure (All 4 + Spare)', note: 'Inflate to door placard specification when cold' },
+      { name: 'Tyre Condition & Sidewalls', note: 'Check for bulges, cuts, cracking, weathering or embedded objects' },
+      { name: 'Tyre Age Check', note: 'Read DOT date code — recommend replacement after 6 years regardless of tread' },
+      { name: 'Tyre Rotation', note: 'Rotate to manufacturer pattern every 5,000–8,000 miles or per schedule' },
+      { name: 'Wheel Torque', note: 'Torque all lug nuts to manufacturer spec (ft-lb) after any wheel removal' },
+      { name: 'Wheel Alignment Check', note: 'Check for uneven wear patterns and vehicle pull; four-wheel align if required' },
+      { name: 'Wheel Balance', note: 'Balance all four wheels if vibration or shimmy is present' },
+      { name: 'TPMS Sensors', note: 'Verify TPMS warning light is off; re-learn sensor positions after rotation' },
+      { name: 'Wheel & Rim Condition', note: 'Inspect for cracks, bends, corrosion or kerb damage on all wheels' },
+      { name: 'Centre Caps & Valve Stems', note: 'Check valve stem condition and caps; replace cracked or missing stems' }
     ]
   },
   {
     id: 'engine', icon: '⚙️', name: 'Engine & Drivetrain',
     items: [
-      { name: 'Spark Plugs', note: 'Inspect gap and electrode wear; replace per interval', labour: 1.0 },
-      { name: 'Ignition Wires / Coil Boots', note: 'Check insulation and connections (if applicable)', labour: 0.4 },
-      { name: 'Drive Belts (Serpentine / Alternator)', note: 'Check for cracks, glazing or fraying', labour: 0.4 },
-      { name: 'Timing Belt / Chain', note: 'Check service interval; replace belt if due (critical)', labour: 3.0 },
-      { name: 'PCV Valve & Hoses', note: 'Check for blockage or deterioration', labour: 0.3 },
-      { name: 'Throttle Body & Idle Air Control', note: 'Inspect for carbon build-up; clean if needed', labour: 0.5 },
-      { name: 'Engine Mounts', note: 'Check for excessive movement, cracks or fluid leaks', labour: 0.4 },
-      { name: 'Exhaust System', note: 'Inspect manifold, pipes, catalytic converter and muffler for leaks', labour: 0.5 },
-      { name: 'Check Engine / Malfunction Indicator Light', note: 'Scan for stored and pending fault codes', labour: 0.5 },
+      { name: 'Spark Plugs', note: 'Inspect electrode gap and wear; replace per interval (copper/iridium/platinum)' },
+      { name: 'Ignition Coils & HT Leads', note: 'Check coil boot condition, connections and resistance (if applicable)' },
+      { name: 'Serpentine / Drive Belt', note: 'Check for cracks, glazing, fraying or missing ribs; check tension' },
+      { name: 'Idler & Tensioner Pulleys', note: 'Check for bearing noise, wobble or seized operation' },
+      { name: 'Timing Belt', note: 'Check service interval and condition; replace if due — critical failure risk' },
+      { name: 'Timing Chain & Guides', note: 'Listen for rattle on cold start; check stretch and guide wear if accessible' },
+      { name: 'PCV Valve & Hoses', note: 'Check for blockage, sludge build-up or split hoses' },
+      { name: 'Throttle Body', note: 'Inspect for carbon build-up on bore and plate; clean if airflow restricted' },
+      { name: 'EGR Valve & Cooler', note: 'Check for carbon fouling or fault codes; inspect cooler for coolant leaks' },
+      { name: 'Intake Manifold & Gaskets', note: 'Check for vacuum leaks, cracks or coolant seepage at gasket faces' },
+      { name: 'Engine Mounts', note: 'Check for excessive movement, collapsed rubber, cracks or fluid leaks' },
+      { name: 'Gearbox / Transmission Mounts', note: 'Check for cracked rubber or excessive drivetrain movement under load' },
+      { name: 'Exhaust Manifold & Gaskets', note: 'Check for cracks, warping and blow-by at gasket faces; listen for ticking' },
+      { name: 'Catalytic Converter', note: 'Inspect for damage, rattling substrate or heat discolouration from rich running' },
+      { name: 'DPF / Diesel Particulate Filter', note: 'Check soot load % via diagnostic; advise forced regen if overdue' },
+      { name: 'Oxygen / Lambda Sensors', note: 'Check for fault codes; inspect wiring and connector condition' },
+      { name: 'Fuel Injectors', note: 'Check for leaks at o-rings; assess spray pattern if misfire suspected' },
+      { name: 'Fuel Pressure Test', note: 'Test rail pressure at idle and under load; compare to specification' },
+      { name: 'Check Engine / MIL', note: 'Scan for all stored, pending and freeze-frame fault codes; document all' },
+      { name: 'Turbo / Supercharger', note: 'Check boost pressure, wastegate operation and intercooler connections' }
     ]
   },
   {
-    id: 'cooling', icon: '🌡️', name: 'Cooling & Heating',
+    id: 'cooling', icon: '🌡️', name: 'Cooling & Climate',
     items: [
-      { name: 'Coolant Condition & Freeze Point', note: 'Test with refractometer; flush if degraded or due', labour: 0.3 },
-      { name: 'Radiator & Hoses', note: 'Check for leaks, soft spots, swelling or hardening', labour: 0.4 },
-      { name: 'Thermostat Operation', note: 'Verify engine reaches and holds correct operating temp', labour: 0.4 },
-      { name: 'Water Pump', note: 'Inspect for leaks at weep hole and bearing play', labour: 0.5 },
-      { name: 'Heater Core Function', note: 'Check heat output at full temp and verify no leaks inside cabin', labour: 0.3 },
-      { name: 'A/C Refrigerant Level & Operation', note: 'Check cooling output; check for leaks if undercharged', labour: 0.5 },
+      { name: 'Coolant Condition & Freeze Point', note: 'Test with refractometer; check pH; flush if degraded or overdue' },
+      { name: 'Radiator', note: 'Check for leaks, fin damage, blocked cores and tank condition' },
+      { name: 'Upper & Lower Radiator Hoses', note: 'Check for soft spots, swelling, hardening, cracking or clamp condition' },
+      { name: 'Heater Hoses', note: 'Check both heater feed and return hoses for leaks and deterioration' },
+      { name: 'Thermostat Operation', note: 'Verify engine reaches and holds correct operating temperature' },
+      { name: 'Water Pump', note: 'Inspect for weep hole leaks, bearing play and impeller noise' },
+      { name: 'Coolant Pressure Test', note: 'Pressure test cooling system to identify slow leaks (cap and system)' },
+      { name: 'Heater Core', note: 'Check heat output at full temperature; verify no coolant smell in cabin' },
+      { name: 'A/C Refrigerant Level & Pressure', note: 'Check system pressure; inspect for leaks with UV dye or electronic detector' },
+      { name: 'A/C Compressor & Clutch', note: 'Check compressor engagement, belt condition and clutch gap' },
+      { name: 'A/C Condenser', note: 'Inspect for fin damage, leaks and debris blockage' },
+      { name: 'Cabin Temperature Output', note: 'Verify correct temperature at vents across all climate zones' },
+      { name: 'Cooling Fan Operation', note: 'Check electric fan trigger temperature and speed; inspect blade condition' }
     ]
   },
   {
     id: 'suspension', icon: '🔩', name: 'Suspension & Steering',
     items: [
-      { name: 'Shock Absorbers / Struts', note: 'Check for leaks, bounce test, and visual damage', labour: 0.5 },
-      { name: 'Ball Joints (upper & lower)', note: 'Check for play and torn boots', labour: 0.5 },
-      { name: 'Tie Rod Ends (inner & outer)', note: 'Check for looseness and torn boots', labour: 0.4 },
-      { name: 'Control Arm Bushings', note: 'Inspect for cracking, deterioration or excessive play', labour: 0.4 },
-      { name: 'Sway Bar & End Links', note: 'Check for worn bushings and loose fasteners', labour: 0.3 },
-      { name: 'Steering Rack / Gearbox', note: 'Check for leaks and excess play on-centre', labour: 0.4 },
-      { name: 'CV Axles & Boots', note: 'Inspect boots for cracks or grease fling; check for clicking on turns', labour: 0.5 },
-      { name: 'Wheel Bearings', note: 'Check for grinding noise or play on lift', labour: 0.4 },
+      { name: 'Shock Absorbers (Front)', note: 'Check for oil leaks, bounce test; inspect for physical damage or corrosion' },
+      { name: 'Shock Absorbers (Rear)', note: 'Check for oil leaks, bounce test; inspect mounting bushings and condition' },
+      { name: 'Coil Springs', note: 'Check for cracks, breaks, settled height or corrosion on coils' },
+      { name: 'Leaf Springs', note: 'Check for broken leaves, u-bolt torque, shackle condition and centrebolt' },
+      { name: 'Ball Joints (Upper)', note: 'Check for play and torn dust boots; check grease nipple condition' },
+      { name: 'Ball Joints (Lower)', note: 'Check for play and torn dust boots; check grease nipple condition' },
+      { name: 'Tie Rod Ends (Inner)', note: 'Check for looseness, wear and torn boots via wheel pull test on lift' },
+      { name: 'Tie Rod Ends (Outer)', note: 'Check for looseness, wear and torn boots via wheel pull test on lift' },
+      { name: 'Control Arm Bushings (Front)', note: 'Inspect for cracking, deterioration, splitting or excessive play' },
+      { name: 'Control Arm Bushings (Rear)', note: 'Inspect for cracking, deterioration, splitting or excessive play' },
+      { name: 'Sway Bar Bushings', note: 'Check for worn, cracked or collapsed anti-roll bar bushings' },
+      { name: 'Sway Bar End Links', note: 'Check for loose fasteners, worn ball joints or cracked boots' },
+      { name: 'Steering Rack / Gearbox', note: 'Check for internal leaks, rack boot condition and excess on-centre play' },
+      { name: 'Power Steering Pump', note: 'Check for leaks, noise under load and correct fluid level' },
+      { name: 'EPS Motor & Column', note: 'Check for fault codes, steering feel and unusual noises (electric systems)' },
+      { name: 'CV Axle Shafts & Boots', note: 'Inspect all boots for cracks or grease fling; listen for clicking on full lock' },
+      { name: 'Prop Shaft / Driveshaft', note: 'Check for play at UJs, centre bearing wear and vibration at speed' },
+      { name: 'Wheel Bearings (Front)', note: 'Check for grinding, roughness or play with wheel on lift' },
+      { name: 'Wheel Bearings (Rear)', note: 'Check for grinding, roughness or play with wheel on lift' },
+      { name: 'Subframe & Chassis Mounts', note: 'Inspect mounting bushings and subframe for cracks or corrosion' }
     ]
   },
   {
     id: 'electrical', icon: '⚡', name: 'Electrical & Lighting',
     items: [
-      { name: 'Battery Voltage & CCA Test', note: 'Test under load; clean terminals and cable ends', labour: 0.3 },
-      { name: 'Alternator Output', note: 'Check charging voltage (13.5–14.8V at idle)', labour: 0.3 },
-      { name: 'Starter Operation', note: 'Note cranking speed and any unusual sounds', labour: 0.2 },
-      { name: 'Headlights (low & high beam)', note: 'Check alignment, brightness and lens condition', labour: 0.2 },
-      { name: 'Tail Lights, Brake Lights & Reverse Light', note: 'Verify all bulbs/LEDs are working', labour: 0.2 },
-      { name: 'Turn Signals & Hazard Flashers', note: 'Check all four corners and instrument cluster indicator', labour: 0.1 },
-      { name: 'Dash Warning Lights', note: 'Verify all self-test lamps come on at key-on and extinguish', labour: 0.2 },
-      { name: 'Horn', note: 'Test operation', labour: 0.1 },
-      { name: 'Windshield Wipers & Washers', note: 'Check blade condition and washer jet spray pattern', labour: 0.2 },
+      { name: 'Battery Voltage & CCA Test', note: 'Load test battery; clean terminals and cable ends; note age and CCA rating' },
+      { name: 'Battery Hold-Down & Tray', note: 'Check clamp security and tray condition; inspect for acid corrosion' },
+      { name: 'Alternator Output & Charge Rate', note: 'Check charging voltage (13.5–14.8V at idle); check for diode ripple' },
+      { name: 'Starter Motor', note: 'Note cranking speed, duration and any unusual sounds or hesitation' },
+      { name: 'Headlights (Low Beam)', note: 'Check alignment, brightness, lens condition and aim' },
+      { name: 'Headlights (High Beam)', note: 'Check operation and correct switching' },
+      { name: 'Daytime Running Lights (DRL)', note: 'Verify DRL operation on all fitted positions' },
+      { name: 'Fog Lights', note: 'Check operation, lens condition and correct aim' },
+      { name: 'Tail Lights & Brake Lights', note: 'Verify all bulbs or LEDs illuminate correctly including centre high-mount' },
+      { name: 'Reverse Lights', note: 'Check operation with transmission in reverse' },
+      { name: 'Turn Signals & Hazard Flashers', note: 'Check all four corners, wing mirror repeaters and instrument indicator' },
+      { name: 'Number Plate Lights', note: 'Check both plate lights are operational' },
+      { name: 'Interior Lighting', note: 'Check dome, map, footwell and door courtesy lights' },
+      { name: 'Dash Warning Lights Self-Test', note: 'Verify all warning lamps illuminate at key-on and extinguish after start' },
+      { name: 'Horn', note: 'Test primary and secondary horn operation (if dual horns fitted)' },
+      { name: 'Windshield Wipers (Front)', note: 'Check blade condition, wiper motor speed settings and park position' },
+      { name: 'Windshield Wipers (Rear)', note: 'Check rear wiper blade and motor operation' },
+      { name: 'Washer Jets (Front & Rear)', note: 'Check spray pattern, reach and heating element (if fitted)' },
+      { name: 'Heated Rear Windscreen', note: 'Verify element operation using test lamp or thermal camera' },
+      { name: 'Heated Seats', note: 'Check all heat settings and even distribution' },
+      { name: 'OBD2 Live Data Scan', note: 'Review live data for sensor anomalies; document all freeze-frame data' }
     ]
   },
   {
-    id: 'body', icon: '🚗', name: 'Body, Interior & Safety',
+    id: 'body', icon: '🚗', name: 'Body, Safety & Interior',
     items: [
-      { name: 'Seat Belts', note: 'Check latching, retraction and webbing condition', labour: 0.2 },
-      { name: 'Airbag / SRS Warning Light', note: 'Verify no active SRS codes', labour: 0.2 },
-      { name: 'Door Locks & Hinges', note: 'Test all doors; lubricate hinges and check latches', labour: 0.3 },
-      { name: 'Bonnet / Hood Latch & Safety Catch', note: 'Check primary and secondary latches', labour: 0.1 },
-      { name: 'Underbody for Rust & Corrosion', note: 'Inspect frame rails, floor pans and subframes', labour: 0.5 },
-      { name: 'Fuel Tank & Lines', note: 'Inspect for leaks, corrosion or loose fittings', labour: 0.4 },
-      { name: 'First Aid Kit & Emergency Equipment', note: 'Check kit, fire extinguisher and reflective triangles', labour: 0.1 },
+      { name: 'Seat Belts (All Positions)', note: 'Check latching, retraction force, webbing condition and pretensioner function' },
+      { name: 'Airbag / SRS Warning Light', note: 'Verify no active SRS codes; inspect clock spring and sensor wiring' },
+      { name: 'Child Seat Anchor Points', note: 'Check ISOFIX / LATCH anchor integrity and correct fitment' },
+      { name: 'Door Locks & Actuators', note: 'Test all doors; check central locking, deadlock and child safety locks' },
+      { name: 'Door Hinges & Check Straps', note: 'Lubricate hinges; check straps for wear and correct door swing' },
+      { name: 'Window Regulators', note: 'Test all electric or manual window operation and check glass seals' },
+      { name: 'Sunroof / Panoramic Roof', note: 'Check open, close, tilt and drain function; inspect seals and drain channels' },
+      { name: 'Bonnet Latch & Safety Catch', note: 'Check primary latch engagement and secondary safety catch release' },
+      { name: 'Boot / Tailgate Latch & Struts', note: 'Check latch, gas struts and lock operation; verify tailgate seal condition' },
+      { name: 'Windshield Condition', note: 'Inspect for chips, cracks or delamination; assess if repair or replacement needed' },
+      { name: 'Mirror Condition & Adjustment', note: 'Check all mirrors for cracks, fogging or loose mounting' },
+      { name: 'Underbody Rust & Corrosion', note: 'Inspect frame rails, floor pans, sills and crossmembers for corrosion' },
+      { name: 'Underbody Shields & Heat Trays', note: 'Check plastic undertray and heat shield security; replace missing fasteners' },
+      { name: 'Fuel Tank & Filler Neck', note: 'Inspect for leaks, corrosion and secure mounting; check filler cap seal' },
+      { name: 'Fuel Lines (Underfloor)', note: 'Inspect for leaks, chafing or damage along routed fuel lines' },
+      { name: 'Exhaust System (Full Run)', note: 'Inspect manifold, downpipe, mid-pipe, cat, silencer and mounting rubbers' },
+      { name: 'Exterior Lights & Lenses', note: 'Check all lens condition for cracks, moisture ingress or UV damage' },
+      { name: 'Emergency Equipment', note: 'Check first aid kit, fire extinguisher, warning triangles and hi-vis vest' },
+      { name: 'Vehicle Documentation', note: 'Verify registration, insurance and MOT/inspection certificate in vehicle' }
+    ]
+  },
+  {
+    id: 'diagnostic', icon: '🖥️', name: 'Diagnostics & Road Test',
+    items: [
+      { name: 'Full DTC Scan (All Modules)', note: 'Scan engine, ABS, SRS, TCM, BCM and all available modules for fault codes' },
+      { name: 'Live Data Analysis', note: 'Review key sensor PIDs: MAF, TPS, STFT, LTFT, coolant temp, O2 sensors' },
+      { name: 'Smoke / EVAP Leak Test', note: 'Pressure test EVAP and intake system with smoke machine; locate leaks' },
+      { name: 'Compression Test', note: 'Measure compression across all cylinders; note any low or inconsistent readings' },
+      { name: 'Cylinder Leakdown Test', note: 'Test leakdown percentage; identify leak path (rings, valves or head gasket)' },
+      { name: 'Fuel System Pressure Test', note: 'Test static and running fuel pressure; check for pressure drop-off' },
+      { name: 'Injector Balance Test', note: 'Compare injector duty cycle across cylinders for fuel delivery issues' },
+      { name: 'Road Test — Cold Start', note: 'Assess cold start idle, warm-up behaviour and any warning lights' },
+      { name: 'Road Test — Acceleration', note: 'Check for hesitation, misfires, smoke or unusual noises under acceleration' },
+      { name: 'Road Test — Braking', note: 'Test straight-line braking, ABS trigger and brake pedal feel' },
+      { name: 'Road Test — Steering & Handling', note: 'Check for pulling, wander, vibration or unusual noise through steering wheel' },
+      { name: 'Road Test — Gear Changes', note: 'Verify smooth shifts (auto/manual); check for slip, flare or harsh engagement' },
+      { name: 'Road Test — Noise & Vibration', note: 'Identify and document any NVH issues: rattle, knock, vibration or squeal' },
+      { name: 'Post Road Test Inspection', note: 'Re-check for new leaks, warning lights or changes after road test' }
     ]
   }
 ];
@@ -420,7 +509,7 @@ function renderItem(secId, item, idx) {
   return `<div class="checklist-item" id="item-${id}">
     <input type="checkbox" class="item-check" id="chk-${id}" onchange="toggleItem('${secId}',${idx})">
     <div class="item-body"><div class="item-name">${escH(item.name)}</div>${item.note?'<div class="item-note">'+escH(item.note)+'</div>':''}</div>
-    <div class="item-hrs">${item.labour.toFixed(1)} hr</div>
+    <input type="number" class="item-hrs-input" id="hrs-${id}" min="0" step="0.1" placeholder="hrs" oninput="updateProgress()">
   </div>`;
 }
 
@@ -428,7 +517,7 @@ function renderCustomItem(secId, idx, cj) {
   const id = secId+'_custom_'+idx;
   return `<div class="checklist-item custom-item" id="item-${id}">
     <input type="checkbox" class="item-check" id="chk-${id}" onchange="toggleCustomItem('${secId}',${idx})">
-    <div class="item-body"><div class="item-name">★ ${escH(cj.desc)}</div><div class="item-note">Custom job</div></div>
+    <div class="item-body"><div class="item-name">â ${escH(cj.desc)}</div><div class="item-note">Custom job</div></div>
     <div class="item-hrs">${parseFloat(cj.hrs||0).toFixed(1)} hr</div>
   </div>`;
 }
@@ -456,7 +545,7 @@ function updateSectionCount(secId) {
   if (!sec) return;
   const totalItems = sec.items.length + (customJobs[secId]||[]).length;
   let done = 0, doneHrs = 0;
-  sec.items.forEach((item,idx) => { if (checkedItems[secId+'_'+idx]) { done++; doneHrs += item.labour; } });
+  sec.items.forEach((item,idx) => { if (checkedItems[secId+'_'+idx]) { done++; doneHrs += parseFloat(document.getElementById('hrs-'+sec.id+'_'+idx)?.value||0); } });
   (customJobs[secId]||[]).forEach((cj,idx) => { if (checkedItems[secId+'_custom_'+idx]) { done++; doneHrs += parseFloat(cj.hrs||0); } });
   document.getElementById('sec-count-'+secId).textContent = done + ' / ' + totalItems;
   document.getElementById('sec-hrs-'+secId).textContent = doneHrs.toFixed(1) + ' hrs done';
@@ -493,9 +582,9 @@ function updateLabour(doneHrs) {
   document.getElementById('labour-done').textContent = doneHrs.toFixed(1)+' hrs';
   document.getElementById('labour-total-hrs').textContent = total.toFixed(1)+' hrs';
   document.getElementById('labour-cost-val').textContent = '$'+cost.toFixed(2);
-  const tech = document.getElementById('tech-name')?.value||'—';
-  const cust = document.getElementById('customer-name')?.value||'—';
-  const jobno = document.getElementById('job-number')?.value||'—';
+  const tech = document.getElementById('tech-name')?.value||'â';
+  const cust = document.getElementById('customer-name')?.value||'â';
+  const jobno = document.getElementById('job-number')?.value||'â';
   const date = document.getElementById('job-date')?.value||new Date().toLocaleDateString();
   ['print-tech','pf-tech'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=tech; });
   ['print-customer'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=cust; });
@@ -537,7 +626,7 @@ function addGlobalCustomJob() {
   let secEl=document.getElementById('sec-'+secId);
   if (!secEl) {
     if (!customJobs[secId]) customJobs[secId]=[];
-    const fakeSection={id:secId,icon:'⚙️',title:secName,items:[]};
+    const fakeSection={id:secId,icon:'âï¸',title:secName,items:[]};
     CHECKLIST_SECTIONS.push(fakeSection);
     const container=document.getElementById('checklist-sections');
     const d=document.createElement('div');
