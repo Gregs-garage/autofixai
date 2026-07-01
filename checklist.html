@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Service Checklist Ã¢ÂÂ AutoFix AI</title>
+<title>Service Checklist â AutoFix AI</title>
 <style>
 :root {
   --primary:#e63946;--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;
@@ -122,19 +122,19 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
 </head>
 <body>
 <header>
-  <div class="logo"><div class="logo-icon">Ã°ÂÂÂ§</div><span>AutoFix <strong>AI</strong></span></div>
-  <a href="/" class="back-btn">Ã¢ÂÂ Back to Dashboard</a>
+  <div class="logo"><div class="logo-icon">ð§</div><span>AutoFix <strong>AI</strong></span></div>
+  <a href="/" class="back-btn">â Back to Dashboard</a>
 </header>
 <main>
   <div class="card" id="setup-card">
-    <h2>Ã°ÂÂÂ Service Checklist Generator <span style="background:var(--warning);color:#000;font-size:0.65rem;padding:2px 7px;border-radius:10px;font-weight:700;">PRO</span></h2>
+    <h2>ð Service Checklist Generator <span style="background:var(--warning);color:#000;font-size:0.65rem;padding:2px 7px;border-radius:10px;font-weight:700;">PRO</span></h2>
     <p style="color:var(--text2);font-size:0.85rem;margin-bottom:14px;">Enter a VIN or fill in vehicle details. Tick completed jobs, add custom work, then print the job sheet.</p>
     <div class="vin-area">
       <div class="vin-row">
         <input type="text" id="vin-input" placeholder="Enter 17-digit VIN for best results..." maxlength="17" oninput="this.value=this.value.toUpperCase()">
-        <button class="btn btn-primary" onclick="generateFromVIN()">Ã°ÂÂÂ Generate from VIN</button>
+        <button class="btn btn-primary" onclick="generateFromVIN()">ð Generate from VIN</button>
       </div>
-      <div class="divider">Ã¢ÂÂ or enter manually Ã¢ÂÂ</div>
+      <div class="divider">â or enter manually â</div>
       <div class="manual-grid">
         <input type="text" id="m-year" placeholder="Year (e.g. 2018)">
         <input type="text" id="m-make" placeholder="Make (e.g. Toyota)">
@@ -143,15 +143,15 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
         <input type="number" id="m-mileage" placeholder="Current mileage" style="grid-column:span 2;">
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="generateManual()">Ã°ÂÂÂ Generate Checklist</button>
-        <button class="btn btn-outline" onclick="clearAll()">Ã°ÂÂÂ Clear</button>
+        <button class="btn btn-primary" onclick="generateManual()">ð Generate Checklist</button>
+        <button class="btn btn-outline" onclick="clearAll()">ð Clear</button>
       </div>
       <div id="setup-msg"></div>
     </div>
   </div>
 
   <div class="card" id="job-info-card" style="display:none;">
-    <h2>Ã°ÂÂ§ÂÃ¢ÂÂÃ°ÂÂÂ§ Job Sheet Details</h2>
+    <h2>ð§âð§ Job Sheet Details</h2>
     <div class="job-header-grid">
       <input type="text" id="tech-name" placeholder="Technician / Mechanic name" oninput="updateLabour()">
       <input type="text" id="customer-name" placeholder="Customer name" oninput="updateLabour()">
@@ -166,18 +166,18 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
   </div>
 
   <div class="card" id="vehicle-card" style="display:none;">
-    <h2>Ã°ÂÂÂ Vehicle</h2>
+    <h2>ð Vehicle</h2>
     <div class="vehicle-grid" id="vehicle-grid"></div>
     <div id="job-info-print" style="margin-top:14px;gap:0;flex-wrap:wrap;">
-      <div class="job-info-print-item"><div class="pil">Technician</div><div class="piv" id="print-tech">Ã¢ÂÂ</div></div>
-      <div class="job-info-print-item"><div class="pil">Customer</div><div class="piv" id="print-customer">Ã¢ÂÂ</div></div>
-      <div class="job-info-print-item"><div class="pil">Job No.</div><div class="piv" id="print-jobno">Ã¢ÂÂ</div></div>
-      <div class="job-info-print-item"><div class="pil">Date</div><div class="piv" id="print-date">Ã¢ÂÂ</div></div>
+      <div class="job-info-print-item"><div class="pil">Technician</div><div class="piv" id="print-tech">â</div></div>
+      <div class="job-info-print-item"><div class="pil">Customer</div><div class="piv" id="print-customer">â</div></div>
+      <div class="job-info-print-item"><div class="pil">Job No.</div><div class="piv" id="print-jobno">â</div></div>
+      <div class="job-info-print-item"><div class="pil">Date</div><div class="piv" id="print-date">â</div></div>
     </div>
   </div>
 
   <div class="card" id="progress-card" style="display:none;">
-    <h2>Ã°ÂÂÂ Progress &amp; Labour</h2>
+    <h2>ð Progress &amp; Labour</h2>
     <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
     <div class="progress-label"><span id="progress-text">0 of 0 tasks complete</span><span id="progress-pct">0%</span></div>
     <div class="labour-summary">
@@ -191,7 +191,7 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
     <button class="btn btn-outline" onclick="expandAll()">Expand All</button>
     <button class="btn btn-outline" onclick="collapseAll()">Collapse All</button>
     <button class="btn btn-outline" onclick="uncheckAll()">Uncheck All</button>
-    <button class="btn btn-print" onclick="printSheet()">Ã°ÂÂÂ¨ Print Job Sheet</button>
+    <button class="btn btn-print" onclick="printSheet()">ð¨ Print Job Sheet</button>
     <button class="btn btn-outline" onclick="newChecklist()">+ New Checklist</button>
   </div>
 
@@ -200,10 +200,10 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
   <div id="global-add-job" style="display:none;margin-bottom:16px;">
     <button class="btn btn-outline" onclick="toggleGlobalAddJob()" style="width:100%;border-style:dashed;padding:12px;">+ Add Custom Job to Any Section</button>
     <div id="global-add-job-form" style="display:none;" class="card">
-      <h2>Ã¢ÂÂ Add Custom Job</h2>
+      <h2>â Add Custom Job</h2>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <input type="text" id="global-job-desc" placeholder="Job description (e.g. Replace rear wheel bearing)">
-        <input type="text" id="global-job-section" placeholder="Section name (e.g. Suspension, Engine) Ã¢ÂÂ leave blank for Custom Jobs">
+        <input type="text" id="global-job-section" placeholder="Section name (e.g. Suspension, Engine) â leave blank for Custom Jobs">
         <div style="display:flex;gap:8px;align-items:center;">
           <input type="number" id="global-job-hrs" placeholder="Labour hrs" min="0" step="0.1" style="width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);">
           <button class="btn btn-success" onclick="addGlobalCustomJob()">Add Job</button>
@@ -216,22 +216,22 @@ footer{text-align:center;color:var(--text2);font-size:0.75rem;padding:20px;}
   <div id="print-footer">
     <table style="width:100%;border-collapse:collapse;font-size:10pt;">
       <tr>
-        <td style="padding:4px 8px 4px 0;"><strong>Technician:</strong> <span id="pf-tech">Ã¢ÂÂ</span></td>
+        <td style="padding:4px 8px 4px 0;"><strong>Technician:</strong> <span id="pf-tech">â</span></td>
         <td style="padding:4px 8px;"><strong>Total Hours:</strong> <span id="pf-hrs">0.0</span> hrs</td>
         <td style="padding:4px 8px;"><strong>Rate:</strong> $<span id="pf-rate">85</span>/hr</td>
         <td style="padding:4px 0 4px 8px;text-align:right;"><strong>Labour Subtotal: $<span id="pf-cost">0.00</span></strong></td>
       </tr>
     </table>
-    <p style="font-size:8pt;color:#888;margin-top:6px;">Generated by AutoFix AI ÃÂ· autofixai.netlify.app ÃÂ· For reference only Ã¢ÂÂ always verify with manufacturer specifications</p>
+    <p style="font-size:8pt;color:#888;margin-top:6px;">Generated by AutoFix AI Â· autofixai.netlify.app Â· For reference only â always verify with manufacturer specifications</p>
   </div>
 
 </main>
-<footer><p>AutoFix AI Ã¢ÂÂ Service Checklist Generator ÃÂ· Pro Feature ÃÂ· Data for reference only, always consult a certified technician</p></footer>
+<footer><p>AutoFix AI â Service Checklist Generator Â· Pro Feature Â· Data for reference only, always consult a certified technician</p></footer>
 
 <script>
 const CHECKLIST_SECTIONS = [
   {
-    id: 'fluids', icon: 'ð§', name: 'Fluids & Filters',
+    id: 'fluids', icon: '💧', name: 'Fluids & Filters',
     items: [
       { name: 'Engine Oil & Filter', note: 'Check level, colour and change interval; note grade and capacity' },
       { name: 'Coolant / Antifreeze', note: 'Check reservoir level and freeze point; inspect radiator cap condition' },
@@ -251,11 +251,11 @@ const CHECKLIST_SECTIONS = [
     ]
   },
   {
-    id: 'brakes', icon: 'ð', name: 'Brakes',
+    id: 'brakes', icon: '🛑', name: 'Brakes',
     items: [
-      { name: 'Front Brake Pads', note: 'Measure pad thickness â minimum 3mm; check for uneven or tapered wear' },
-      { name: 'Rear Brake Pads', note: 'Measure pad thickness â minimum 3mm; check for glazing or cracking' },
-      { name: 'Rear Brake Shoes', note: 'Measure lining thickness â minimum 1.5mm; check for contamination' },
+      { name: 'Front Brake Pads', note: 'Measure pad thickness — minimum 3mm; check for uneven or tapered wear' },
+      { name: 'Rear Brake Pads', note: 'Measure pad thickness — minimum 3mm; check for glazing or cracking' },
+      { name: 'Rear Brake Shoes', note: 'Measure lining thickness — minimum 1.5mm; check for contamination' },
       { name: 'Front Brake Rotors / Discs', note: 'Measure thickness and runout; check for scoring, heat cracks or bluing' },
       { name: 'Rear Brake Rotors / Discs', note: 'Measure thickness and runout; check for scoring or heat cracks' },
       { name: 'Brake Drums', note: 'Measure internal diameter; check for scoring, cracks or out-of-round' },
@@ -271,14 +271,14 @@ const CHECKLIST_SECTIONS = [
     ]
   },
   {
-    id: 'tyres', icon: 'ðµ', name: 'Tyres & Wheels',
+    id: 'tyres', icon: '🔵', name: 'Tyres & Wheels',
     items: [
-      { name: 'Tyre Tread Depth (All 4)', note: 'Measure all four corners â minimum legal 1.6mm; advise replacement at 2mm' },
+      { name: 'Tyre Tread Depth (All 4)', note: 'Measure all four corners — minimum legal 1.6mm; advise replacement at 2mm' },
       { name: 'Spare Tyre Tread & Condition', note: 'Check tread depth, sidewall condition and inflation of spare' },
       { name: 'Tyre Pressure (All 4 + Spare)', note: 'Inflate to door placard specification when cold' },
       { name: 'Tyre Condition & Sidewalls', note: 'Check for bulges, cuts, cracking, weathering or embedded objects' },
-      { name: 'Tyre Age Check', note: 'Read DOT date code â recommend replacement after 6 years regardless of tread' },
-      { name: 'Tyre Rotation', note: 'Rotate to manufacturer pattern every 5,000â8,000 miles or per schedule' },
+      { name: 'Tyre Age Check', note: 'Read DOT date code — recommend replacement after 6 years regardless of tread' },
+      { name: 'Tyre Rotation', note: 'Rotate to manufacturer pattern every 5,000–8,000 miles or per schedule' },
       { name: 'Wheel Torque', note: 'Torque all lug nuts to manufacturer spec (ft-lb) after any wheel removal' },
       { name: 'Wheel Alignment Check', note: 'Check for uneven wear patterns and vehicle pull; four-wheel align if required' },
       { name: 'Wheel Balance', note: 'Balance all four wheels if vibration or shimmy is present' },
@@ -288,13 +288,13 @@ const CHECKLIST_SECTIONS = [
     ]
   },
   {
-    id: 'engine', icon: 'âï¸', name: 'Engine & Drivetrain',
+    id: 'engine', icon: '⚙️', name: 'Engine & Drivetrain',
     items: [
       { name: 'Spark Plugs', note: 'Inspect electrode gap and wear; replace per interval (copper/iridium/platinum)' },
       { name: 'Ignition Coils & HT Leads', note: 'Check coil boot condition, connections and resistance (if applicable)' },
       { name: 'Serpentine / Drive Belt', note: 'Check for cracks, glazing, fraying or missing ribs; check tension' },
       { name: 'Idler & Tensioner Pulleys', note: 'Check for bearing noise, wobble or seized operation' },
-      { name: 'Timing Belt', note: 'Check service interval and condition; replace if due â critical failure risk' },
+      { name: 'Timing Belt', note: 'Check service interval and condition; replace if due — critical failure risk' },
       { name: 'Timing Chain & Guides', note: 'Listen for rattle on cold start; check stretch and guide wear if accessible' },
       { name: 'PCV Valve & Hoses', note: 'Check for blockage, sludge build-up or split hoses' },
       { name: 'Throttle Body', note: 'Inspect for carbon build-up on bore and plate; clean if airflow restricted' },
@@ -313,7 +313,7 @@ const CHECKLIST_SECTIONS = [
     ]
   },
   {
-    id: 'cooling', icon: 'ð¡ï¸', name: 'Cooling & Climate',
+    id: 'cooling', icon: '🌡️', name: 'Cooling & Climate',
     items: [
       { name: 'Coolant Condition & Freeze Point', note: 'Test with refractometer; check pH; flush if degraded or overdue' },
       { name: 'Radiator', note: 'Check for leaks, fin damage, blocked cores and tank condition' },
@@ -331,7 +331,7 @@ const CHECKLIST_SECTIONS = [
     ]
   },
   {
-    id: 'suspension', icon: 'ð©', name: 'Suspension & Steering',
+    id: 'suspension', icon: '🔩', name: 'Suspension & Steering',
     items: [
       { name: 'Shock Absorbers (Front)', note: 'Check for oil leaks, bounce test; inspect for physical damage or corrosion' },
       { name: 'Shock Absorbers (Rear)', note: 'Check for oil leaks, bounce test; inspect mounting bushings and condition' },
@@ -356,11 +356,11 @@ const CHECKLIST_SECTIONS = [
     ]
   },
   {
-    id: 'electrical', icon: 'â¡', name: 'Electrical & Lighting',
+    id: 'electrical', icon: '⚡', name: 'Electrical & Lighting',
     items: [
       { name: 'Battery Voltage & CCA Test', note: 'Load test battery; clean terminals and cable ends; note age and CCA rating' },
       { name: 'Battery Hold-Down & Tray', note: 'Check clamp security and tray condition; inspect for acid corrosion' },
-      { name: 'Alternator Output & Charge Rate', note: 'Check charging voltage (13.5â14.8V at idle); check for diode ripple' },
+      { name: 'Alternator Output & Charge Rate', note: 'Check charging voltage (13.5–14.8V at idle); check for diode ripple' },
       { name: 'Starter Motor', note: 'Note cranking speed, duration and any unusual sounds or hesitation' },
       { name: 'Headlights (Low Beam)', note: 'Check alignment, brightness, lens condition and aim' },
       { name: 'Headlights (High Beam)', note: 'Check operation and correct switching' },
@@ -382,7 +382,7 @@ const CHECKLIST_SECTIONS = [
     ]
   },
   {
-    id: 'body', icon: 'ð', name: 'Body, Safety & Interior',
+    id: 'body', icon: '🚗', name: 'Body, Safety & Interior',
     items: [
       { name: 'Seat Belts (All Positions)', note: 'Check latching, retraction force, webbing condition and pretensioner function' },
       { name: 'Airbag / SRS Warning Light', note: 'Verify no active SRS codes; inspect clock spring and sensor wiring' },
@@ -406,7 +406,7 @@ const CHECKLIST_SECTIONS = [
     ]
   },
   {
-    id: 'diagnostic', icon: 'ð¥ï¸', name: 'Diagnostics & Road Test',
+    id: 'diagnostic', icon: '🖥️', name: 'Diagnostics & Road Test',
     items: [
       { name: 'Full DTC Scan (All Modules)', note: 'Scan engine, ABS, SRS, TCM, BCM and all available modules for fault codes' },
       { name: 'Live Data Analysis', note: 'Review key sensor PIDs: MAF, TPS, STFT, LTFT, coolant temp, O2 sensors' },
@@ -415,12 +415,12 @@ const CHECKLIST_SECTIONS = [
       { name: 'Cylinder Leakdown Test', note: 'Test leakdown percentage; identify leak path (rings, valves or head gasket)' },
       { name: 'Fuel System Pressure Test', note: 'Test static and running fuel pressure; check for pressure drop-off' },
       { name: 'Injector Balance Test', note: 'Compare injector duty cycle across cylinders for fuel delivery issues' },
-      { name: 'Road Test â Cold Start', note: 'Assess cold start idle, warm-up behaviour and any warning lights' },
-      { name: 'Road Test â Acceleration', note: 'Check for hesitation, misfires, smoke or unusual noises under acceleration' },
-      { name: 'Road Test â Braking', note: 'Test straight-line braking, ABS trigger and brake pedal feel' },
-      { name: 'Road Test â Steering & Handling', note: 'Check for pulling, wander, vibration or unusual noise through steering wheel' },
-      { name: 'Road Test â Gear Changes', note: 'Verify smooth shifts (auto/manual); check for slip, flare or harsh engagement' },
-      { name: 'Road Test â Noise & Vibration', note: 'Identify and document any NVH issues: rattle, knock, vibration or squeal' },
+      { name: 'Road Test — Cold Start', note: 'Assess cold start idle, warm-up behaviour and any warning lights' },
+      { name: 'Road Test — Acceleration', note: 'Check for hesitation, misfires, smoke or unusual noises under acceleration' },
+      { name: 'Road Test — Braking', note: 'Test straight-line braking, ABS trigger and brake pedal feel' },
+      { name: 'Road Test — Steering & Handling', note: 'Check for pulling, wander, vibration or unusual noise through steering wheel' },
+      { name: 'Road Test — Gear Changes', note: 'Verify smooth shifts (auto/manual); check for slip, flare or harsh engagement' },
+      { name: 'Road Test — Noise & Vibration', note: 'Identify and document any NVH issues: rattle, knock, vibration or squeal' },
       { name: 'Post Road Test Inspection', note: 'Re-check for new leaks, warning lights or changes after road test' }
     ]
   }
@@ -517,7 +517,7 @@ function renderCustomItem(secId, idx, cj) {
   const id = secId+'_custom_'+idx;
   return `<div class="checklist-item custom-item" id="item-${id}">
     <input type="checkbox" class="item-check" id="chk-${id}" onchange="toggleCustomItem('${secId}',${idx})">
-    <div class="item-body"><div class="item-name">Ã¢ÂÂ ${escH(cj.desc)}</div><div class="item-note">Custom job</div></div>
+    <div class="item-body"><div class="item-name">â ${escH(cj.desc)}</div><div class="item-note">Custom job</div></div>
     <div class="item-hrs">${parseFloat(cj.hrs||0).toFixed(1)} hr</div>
   </div>`;
 }
@@ -582,9 +582,9 @@ function updateLabour(doneHrs) {
   document.getElementById('labour-done').textContent = doneHrs.toFixed(1)+' hrs';
   document.getElementById('labour-total-hrs').textContent = total.toFixed(1)+' hrs';
   document.getElementById('labour-cost-val').textContent = '$'+cost.toFixed(2);
-  const tech = document.getElementById('tech-name')?.value||'Ã¢ÂÂ';
-  const cust = document.getElementById('customer-name')?.value||'Ã¢ÂÂ';
-  const jobno = document.getElementById('job-number')?.value||'Ã¢ÂÂ';
+  const tech = document.getElementById('tech-name')?.value||'â';
+  const cust = document.getElementById('customer-name')?.value||'â';
+  const jobno = document.getElementById('job-number')?.value||'â';
   const date = document.getElementById('job-date')?.value||new Date().toLocaleDateString();
   ['print-tech','pf-tech'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=tech; });
   ['print-customer'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=cust; });
@@ -626,7 +626,7 @@ function addGlobalCustomJob() {
   let secEl=document.getElementById('sec-'+secId);
   if (!secEl) {
     if (!customJobs[secId]) customJobs[secId]=[];
-    const fakeSection={id:secId,icon:'Ã¢ÂÂÃ¯Â¸Â',title:secName,items:[]};
+    const fakeSection={id:secId,icon:'âï¸',title:secName,items:[]};
     CHECKLIST_SECTIONS.push(fakeSection);
     const container=document.getElementById('checklist-sections');
     const d=document.createElement('div');
